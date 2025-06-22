@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { X, User, Phone, Calendar, MapPin, Edit3, Save, Camera } from 'lucide-react'
-import { UserProfile, ProfileFormData } from '../../types'
+import { X, User, Phone, Calendar, MapPin, Edit3, Save, Camera, GraduationCap, Lock, Unlock } from 'lucide-react'
+import { UserProfile, ProfileFormData, University, Department, Semester } from '../../types'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useAuth } from '../../hooks/useAuth'
+import { supabase } from '../../lib/supabase'
 
 interface ProfileModalProps {
   isOpen: boolean
@@ -39,11 +40,26 @@ const AVATAR_OPTIONS = [
   }
 ]
 
+const SECRET_KEY = 'Sadguru2002'
+
 export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: ProfileModalProps) {
   const { user, signOut } = useAuth()
   const { updateProfile } = useUserProfile(user?.id)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [showSecretKeyDialog, setShowSecretKeyDialog] = useState(false)
+  const [showAcademicUpdate, setShowAcademicUpdate] = useState(false)
+  const [secretKey, setSecretKey] = useState('')
+  const [secretKeyError, setSecretKeyError] = useState('')
+  
+  // Academic data
+  const [universities, setUniversities] = useState<University[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [semesters, setSemesters] = useState<Semester[]>([])
+  const [selectedUniversity, setSelectedUniversity] = useState<string>('')
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('')
+  const [selectedSemester, setSelectedSemester] = useState<string>('')
+  
   const [formData, setFormData] = useState<ProfileFormData>({
     display_name: '',
     phone_number: '',
@@ -52,6 +68,54 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
     bio: '',
     location: ''
   })
+
+  // Define functions before useEffect hooks
+  const fetchUniversities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('universities')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+      setUniversities(data || [])
+    } catch (error) {
+      console.error('Error fetching universities:', error)
+    }
+  }
+
+  const fetchDepartments = async (universityId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('departments')
+        .select('*')
+        .eq('university_id', universityId)
+        .order('name')
+
+      if (error) throw error
+      setDepartments(data || [])
+      setSelectedDepartment('') // Reset department selection
+      setSemesters([]) // Reset semesters
+    } catch (error) {
+      console.error('Error fetching departments:', error)
+    }
+  }
+
+  const fetchSemesters = async (departmentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('semesters')
+        .select('*')
+        .eq('department_id', departmentId)
+        .order('number')
+
+      if (error) throw error
+      setSemesters(data || [])
+      setSelectedSemester('') // Reset semester selection
+    } catch (error) {
+      console.error('Error fetching semesters:', error)
+    }
+  }
 
   useEffect(() => {
     if (profile) {
@@ -63,13 +127,64 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
         bio: profile.bio || '',
         location: profile.location || ''
       })
+      
+      // Set current academic selections
+      setSelectedUniversity(profile.university_id || '')
+      setSelectedDepartment(profile.department_id || '')
+      setSelectedSemester(profile.semester_id || '')
     }
   }, [profile])
+
+  useEffect(() => {
+    if (showAcademicUpdate) {
+      fetchUniversities()
+    }
+  }, [showAcademicUpdate])
+
+  useEffect(() => {
+    if (selectedUniversity) {
+      fetchDepartments(selectedUniversity)
+    }
+  }, [selectedUniversity])
+
+  useEffect(() => {
+    if (selectedDepartment) {
+      fetchSemesters(selectedDepartment)
+    }
+  }, [selectedDepartment])
+
+  // Auto-dismiss error message after 2 seconds
+  useEffect(() => {
+    if (secretKeyError) {
+      const timer = setTimeout(() => {
+        setSecretKeyError('')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [secretKeyError])
 
   if (!isOpen) return null
 
   const handleInputChange = (field: keyof ProfileFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleUpdateAcademicClick = () => {
+    setShowSecretKeyDialog(true)
+    setSecretKey('')
+    setSecretKeyError('')
+  }
+
+  const handleSecretKeySubmit = () => {
+    if (secretKey === SECRET_KEY) {
+      setShowSecretKeyDialog(false)
+      setShowAcademicUpdate(true)
+      setSecretKeyError('')
+      setSecretKey('')
+    } else {
+      setSecretKeyError('Secret Key Incorrect')
+      setSecretKey('')
+    }
   }
 
   const handleSave = async () => {
@@ -78,15 +193,41 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
       const result = await updateProfile(formData)
       if (result && !result.error) {
         setIsEditing(false)
-        // Trigger a callback to refresh profile data in parent components
         if (onProfileUpdate) {
           onProfileUpdate()
         }
-        // Show success feedback
-        console.log('Profile updated successfully!')
       }
     } catch (error) {
       console.error('Error updating profile:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAcademicUpdate = async () => {
+    if (!selectedUniversity || !selectedDepartment || !selectedSemester) {
+      alert('Please select University, Department, and Semester')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const result = await updateProfile({
+        university_id: selectedUniversity,
+        department_id: selectedDepartment,
+        semester_id: selectedSemester
+      })
+      
+      if (result && !result.error) {
+        setShowAcademicUpdate(false)
+        if (onProfileUpdate) {
+          onProfileUpdate()
+        }
+        alert('Academic profile updated successfully!')
+      }
+    } catch (error) {
+      console.error('Error updating academic profile:', error)
+      alert('Failed to update academic profile. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -108,6 +249,26 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
       month: 'long',
       day: 'numeric'
     })
+  }
+
+  const getSemesterLabel = (number: number) => {
+    const suffixes = ['st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th']
+    return `${number}${suffixes[number - 1]} Semester`
+  }
+
+  const getCurrentUniversityName = () => {
+    const university = universities.find(u => u.id === profile?.university_id)
+    return university?.name || 'Not set'
+  }
+
+  const getCurrentDepartmentName = () => {
+    const department = departments.find(d => d.id === profile?.department_id)
+    return department?.name || 'Not set'
+  }
+
+  const getCurrentSemesterName = () => {
+    const semester = semesters.find(s => s.id === profile?.semester_id)
+    return semester ? getSemesterLabel(semester.number) : 'Not set'
   }
 
   return (
@@ -149,6 +310,119 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
               {formData.display_name || 'Your Name'}
             </h3>
             <p className="text-gray-600">Student</p>
+          </div>
+
+          {/* Academic Information Section */}
+          <div className="mb-8 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <GraduationCap className="h-5 w-5 text-indigo-600 mr-2" />
+                <h4 className="text-lg font-semibold text-gray-900">Academic Information</h4>
+              </div>
+              {!showAcademicUpdate && (
+                <button
+                  onClick={handleUpdateAcademicClick}
+                  className="flex items-center px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                >
+                  <Edit3 className="h-4 w-4 mr-1" />
+                  Update Academic Info
+                </button>
+              )}
+            </div>
+
+            {!showAcademicUpdate ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">University</p>
+                  <p className="text-gray-900">{getCurrentUniversityName()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Department</p>
+                  <p className="text-gray-900">{getCurrentDepartmentName()}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Semester</p>
+                  <p className="text-gray-900">{getCurrentSemesterName()}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Academic Update Form */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      University
+                    </label>
+                    <select
+                      value={selectedUniversity}
+                      onChange={(e) => setSelectedUniversity(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                      <option value="">Select University</option>
+                      {universities.map((university) => (
+                        <option key={university.id} value={university.id}>
+                          {university.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Department
+                    </label>
+                    <select
+                      value={selectedDepartment}
+                      onChange={(e) => setSelectedDepartment(e.target.value)}
+                      disabled={!selectedUniversity}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((department) => (
+                        <option key={department.id} value={department.id}>
+                          {department.name} ({department.code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Semester
+                    </label>
+                    <select
+                      value={selectedSemester}
+                      onChange={(e) => setSelectedSemester(e.target.value)}
+                      disabled={!selectedDepartment}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
+                    >
+                      <option value="">Select Semester</option>
+                      {semesters.map((semester) => (
+                        <option key={semester.id} value={semester.id}>
+                          {getSemesterLabel(semester.number)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setShowAcademicUpdate(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAcademicUpdate}
+                      disabled={loading || !selectedUniversity || !selectedDepartment || !selectedSemester}
+                      className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? 'Updating...' : 'Update Academic Info'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Avatar Selection (only in edit mode) */}
@@ -331,6 +605,62 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
           </div>
         </div>
       </div>
+
+      {/* Secret Key Dialog */}
+      {showSecretKeyDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-60">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="text-center mb-6">
+              <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Enter Secret Key</h3>
+              <p className="text-gray-600 text-sm">
+                Please enter the secret key to update your academic information
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <input
+                  type="password"
+                  value={secretKey}
+                  onChange={(e) => setSecretKey(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-lg tracking-wider"
+                  placeholder="Enter secret key"
+                  onKeyPress={(e) => e.key === 'Enter' && handleSecretKeySubmit()}
+                  autoFocus
+                />
+                {secretKeyError && (
+                  <p className="text-red-600 text-sm mt-2 text-center font-medium">
+                    {secretKeyError}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setShowSecretKeyDialog(false)
+                    setSecretKey('')
+                    setSecretKeyError('')
+                  }}
+                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSecretKeySubmit}
+                  className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center"
+                >
+                  <Unlock className="h-4 w-4 mr-2" />
+                  Verify
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
