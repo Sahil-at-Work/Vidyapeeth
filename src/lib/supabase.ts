@@ -3,11 +3,23 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+console.log('Supabase URL:', supabaseUrl)
+console.log('Supabase Anon Key exists:', !!supabaseAnonKey)
+
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.error('Missing Supabase environment variables:', {
+    url: !!supabaseUrl,
+    key: !!supabaseAnonKey
+  })
+  throw new Error('Missing Supabase environment variables. Please check your .env file.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+})
 
 export type Database = {
   public: {
@@ -315,6 +327,61 @@ export type Database = {
           description?: string | null
           xp_reward?: number
           earned_at?: string
+        }
+      }
+      users: {
+        Row: {
+          id: string
+          email: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      news: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          url: string
+          image_url: string | null
+          published_at: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          url: string
+          image_url?: string | null
+          published_at?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          url?: string
+          image_url?: string | null
+          published_at?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
         }
       }
     }

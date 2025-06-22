@@ -1,6 +1,7 @@
 import React from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useUserProfile } from './hooks/useUserProfile'
+import { LandingPage } from './components/Landing/LandingPage.tsx'
 import { AuthForm } from './components/Auth/AuthForm'
 import { QuestionnaireFlow } from './components/Questionnaire/QuestionnaireFlow'
 import { Dashboard } from './components/Dashboard/Dashboard'
@@ -8,6 +9,7 @@ import { Dashboard } from './components/Dashboard/Dashboard'
 function App() {
   const { user, loading: authLoading } = useAuth()
   const { profile, loading: profileLoading } = useUserProfile(user?.id)
+  const [showAuth, setShowAuth] = React.useState(false)
 
   if (authLoading || profileLoading) {
     return (
@@ -20,9 +22,12 @@ function App() {
     )
   }
 
-  // Not authenticated - show auth form
+  // Not authenticated - show landing page or auth form
   if (!user) {
-    return <AuthForm onSuccess={() => {}} />
+    if (showAuth) {
+      return <AuthForm onSuccess={() => setShowAuth(false)} />
+    }
+    return <LandingPage onGetStarted={() => setShowAuth(true)} />
   }
 
   // Authenticated but profile not completed - show questionnaire
