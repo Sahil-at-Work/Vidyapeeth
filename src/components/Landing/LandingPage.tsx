@@ -11,7 +11,13 @@ import {
   CheckCircle,
   Sparkles,
   TrendingUp,
-  Award
+  Award,
+  Brain,
+  Calculator,
+  Microscope,
+  Cpu,
+  FlaskConical,
+  Atom
 } from 'lucide-react'
 
 interface LandingPageProps {
@@ -38,7 +44,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               onClick={onGetStarted}
               className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
-              Get Started
+              Start Free Trial
             </button>
           </div>
         </div>
@@ -51,22 +57,33 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             {/* Badge */}
             <div className="inline-flex items-center bg-white/80 backdrop-blur-sm border border-blue-200 rounded-full px-4 py-2 mb-8 shadow-lg">
               <Sparkles className="h-4 w-4 text-blue-600 mr-2" />
-              <span className="text-sm font-medium text-blue-700">Gamified Learning Platform</span>
+              <span className="text-sm font-medium text-blue-700">India's #1 Gamified Learning Platform</span>
             </div>
 
-            {/* Main Heading */}
+            {/* Main Heading - SEO Optimized */}
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-              Transform Your
+              Master
               <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                Academic Journey
+                JEE • NEET • GATE
               </span>
+              <span className="block text-4xl md:text-5xl mt-2">& All Competitive Exams</span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Experience the future of education with our comprehensive, gamified learning platform. 
-              Track progress, compete with AI, and master your subjects with engaging study materials.
+            {/* SEO-Rich Subtitle */}
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-5xl mx-auto leading-relaxed">
+              India's most comprehensive online learning platform for <strong>JEE Main & Advanced</strong>, <strong>NEET</strong>, <strong>CET</strong>, <strong>GATE</strong>, and <strong>Board Exams</strong>. 
+              Experience gamified learning with AI-powered progress tracking, comprehensive study materials, and mock tests.
             </p>
+
+            {/* Exam Categories */}
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
+              <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">JEE Main & Advanced</span>
+              <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">NEET UG</span>
+              <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">MHT CET</span>
+              <span className="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full text-sm font-medium">GATE</span>
+              <span className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">Board Exams</span>
+              <span className="bg-pink-100 text-pink-800 px-4 py-2 rounded-full text-sm font-medium">University Exams</span>
+            </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
@@ -74,37 +91,37 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                 onClick={onGetStarted}
                 className="group bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center"
               >
-                Start Learning Today
+                Start Free Preparation
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </button>
               
               <div className="flex items-center text-gray-600">
                 <div className="flex -space-x-2 mr-3">
-                  <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="Student" />
-                  <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="Student" />
-                  <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="Student" />
+                  <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="JEE Student Success" />
+                  <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="NEET Student Success" />
+                  <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="GATE Student Success" />
                 </div>
-                <span className="text-sm">Join 10,000+ students</span>
+                <span className="text-sm">Join 50,000+ successful students</span>
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Success Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">50+</div>
-                <div className="text-gray-600">Universities</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">500+</div>
-                <div className="text-gray-600">Subjects</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-indigo-600 mb-2">10K+</div>
-                <div className="text-gray-600">Students</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">95%</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">98%</div>
                 <div className="text-gray-600">Success Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">50K+</div>
+                <div className="text-gray-600">Students Enrolled</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600 mb-2">1000+</div>
+                <div className="text-gray-600">Study Materials</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-indigo-600 mb-2">24/7</div>
+                <div className="text-gray-600">Support</div>
               </div>
             </div>
           </div>
@@ -116,15 +133,119 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="absolute bottom-20 left-20 w-24 h-24 bg-indigo-200 rounded-full opacity-20 animate-pulse delay-2000"></div>
       </section>
 
+      {/* Exam Categories Section */}
+      <section className="py-20 bg-white/70 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Complete Preparation for All Major Exams
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+              From undergraduate entrance exams to graduate-level competitive tests, we cover everything you need to succeed.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {/* Undergraduate Exams */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-100">
+              <div className="flex items-center mb-6">
+                <div className="bg-blue-600 w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Undergraduate Exams</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <Calculator className="h-5 w-5 text-blue-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">JEE Main & Advanced</div>
+                    <div className="text-sm text-gray-600">Engineering Entrance</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <Microscope className="h-5 w-5 text-green-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">NEET UG</div>
+                    <div className="text-sm text-gray-600">Medical Entrance</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <FlaskConical className="h-5 w-5 text-purple-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">MHT CET</div>
+                    <div className="text-sm text-gray-600">Maharashtra CET</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <BookOpen className="h-5 w-5 text-orange-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">Board Exams</div>
+                    <div className="text-sm text-gray-600">CBSE, State Boards</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Graduate Exams */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-100">
+              <div className="flex items-center mb-6">
+                <div className="bg-purple-600 w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Graduate Exams</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <Cpu className="h-5 w-5 text-indigo-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">GATE</div>
+                    <div className="text-sm text-gray-600">All Engineering Streams</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <GraduationCap className="h-5 w-5 text-green-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">University Exams</div>
+                    <div className="text-sm text-gray-600">All Major Universities</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <Atom className="h-5 w-5 text-blue-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">Technical Education</div>
+                    <div className="text-sm text-gray-600">Specialized Courses</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                  <Target className="h-5 w-5 text-red-600 mr-3" />
+                  <div>
+                    <div className="font-semibold text-gray-900">Competitive Tests</div>
+                    <div className="text-sm text-gray-600">Government Jobs</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 bg-white/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Vidyapeeth?
+              Why 50,000+ Students Choose Vidyapeeth?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our platform combines cutting-edge technology with proven educational methods to deliver an unparalleled learning experience.
+              Our AI-powered platform combines proven educational methods with cutting-edge technology for maximum learning efficiency.
             </p>
           </div>
 
@@ -134,20 +255,20 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Trophy className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Gamified Learning</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Gamified Learning Experience</h3>
               <p className="text-gray-600 leading-relaxed">
-                Earn XP points, maintain study streaks, and unlock achievements as you progress through your academic journey.
+                Earn XP points, maintain study streaks, unlock achievements, and compete with AI students on leaderboards for maximum motivation.
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200">
               <div className="bg-gradient-to-r from-purple-500 to-purple-600 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Users className="h-7 w-7 text-white" />
+                <Brain className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">AI Competitors</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">AI-Powered Study Assistant</h3>
               <p className="text-gray-600 leading-relaxed">
-                Compete with intelligent AI students on the leaderboard and stay motivated with friendly competition.
+                Personalized learning paths, intelligent progress tracking, and adaptive content recommendations based on your performance.
               </p>
             </div>
 
@@ -156,9 +277,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <BookOpen className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Comprehensive Materials</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Comprehensive Study Materials</h3>
               <p className="text-gray-600 leading-relaxed">
-                Access detailed syllabi, practice GATE questions, and study resources for all your subjects.
+                Complete syllabi, previous year questions, mock tests, video lectures, and practice problems for all competitive exams.
               </p>
             </div>
 
@@ -167,20 +288,20 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-green-500 to-green-600 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <TrendingUp className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Progress Tracking</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Real-Time Progress Analytics</h3>
               <p className="text-gray-600 leading-relaxed">
-                Monitor your learning progress with detailed analytics and completion percentages for each subject.
+                Detailed performance insights, weakness identification, strength analysis, and improvement recommendations.
               </p>
             </div>
 
             {/* Feature 5 */}
             <div className="group bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200">
               <div className="bg-gradient-to-r from-orange-500 to-orange-600 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Target className="h-7 w-7 text-white" />
+                <Users className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Personalized Learning</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Competitive Environment</h3>
               <p className="text-gray-600 leading-relaxed">
-                Tailored content based on your university, department, and semester for maximum relevance.
+                Compete with thousands of students nationwide, participate in live quizzes, and climb the leaderboards.
               </p>
             </div>
 
@@ -189,9 +310,64 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-pink-500 to-pink-600 w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Award className="h-7 w-7 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Achievement System</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Expert-Curated Content</h3>
               <p className="text-gray-600 leading-relaxed">
-                Unlock badges and achievements for completing subjects, maintaining streaks, and reaching milestones.
+                Content created by IIT/IIM alumni and subject matter experts with years of teaching experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Success Stories Section */}
+      <section className="py-20 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Success Stories That Inspire
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Join thousands of students who have achieved their dream ranks with Vidyapeeth.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center mb-4">
+                <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&fit=crop" alt="JEE Topper" className="w-12 h-12 rounded-full mr-4" />
+                <div>
+                  <div className="font-semibold text-gray-900">Arjun Sharma</div>
+                  <div className="text-sm text-gray-600">JEE Advanced AIR 47</div>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">
+                "Vidyapeeth's gamified approach made studying fun. The AI-powered analytics helped me identify my weak areas and improve systematically."
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center mb-4">
+                <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&fit=crop" alt="NEET Topper" className="w-12 h-12 rounded-full mr-4" />
+                <div>
+                  <div className="font-semibold text-gray-900">Priya Patel</div>
+                  <div className="text-sm text-gray-600">NEET AIR 156</div>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">
+                "The comprehensive study materials and mock tests on Vidyapeeth were exactly what I needed to crack NEET with a top rank."
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <div className="flex items-center mb-4">
+                <img src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&fit=crop" alt="GATE Topper" className="w-12 h-12 rounded-full mr-4" />
+                <div>
+                  <div className="font-semibold text-gray-900">Rahul Kumar</div>
+                  <div className="text-sm text-gray-600">GATE CS AIR 23</div>
+                </div>
+              </div>
+              <p className="text-gray-600 italic">
+                "The structured approach and competitive environment on Vidyapeeth helped me stay motivated throughout my GATE preparation."
               </p>
             </div>
           </div>
@@ -203,10 +379,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              How It Works
+              Start Your Success Journey in 3 Simple Steps
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Get started in minutes and begin your personalized learning journey.
+              Get started in minutes and begin your personalized exam preparation journey.
             </p>
           </div>
 
@@ -216,9 +392,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                 1
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Create Your Profile</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Choose Your Exam</h3>
               <p className="text-gray-600 leading-relaxed">
-                Sign up and complete your academic profile by selecting your university, department, and semester.
+                Select your target exam (JEE, NEET, GATE, CET, etc.) and complete your academic profile setup.
               </p>
             </div>
 
@@ -227,9 +403,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-purple-500 to-purple-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                 2
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Start Learning</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Access Study Materials</h3>
               <p className="text-gray-600 leading-relaxed">
-                Access your personalized dashboard with subjects, study materials, and progress tracking.
+                Get instant access to comprehensive study materials, mock tests, and practice questions tailored to your exam.
               </p>
             </div>
 
@@ -238,9 +414,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 text-white font-bold text-xl shadow-lg">
                 3
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Track Progress</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">Track & Improve</h3>
               <p className="text-gray-600 leading-relaxed">
-                Monitor your learning journey, compete on leaderboards, and unlock achievements.
+                Monitor your progress with AI analytics, compete on leaderboards, and achieve your target rank.
               </p>
             </div>
           </div>
@@ -251,10 +427,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Learning?
+            Ready to Crack Your Dream Exam?
           </h2>
           <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-            Join thousands of students who are already experiencing the future of education.
+            Join 50,000+ students who are already on their path to success with India's most trusted exam preparation platform.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -262,12 +438,12 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
               onClick={onGetStarted}
               className="group bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all duration-200 shadow-xl hover:shadow-2xl transform hover:-translate-y-1 flex items-center"
             >
-              Get Started for Free
+              Start Free Preparation Now
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
-          <div className="mt-8 flex items-center justify-center space-x-6 text-blue-100">
+          <div className="mt-8 flex flex-wrap justify-center gap-6 text-blue-100">
             <div className="flex items-center">
               <CheckCircle className="h-5 w-5 mr-2" />
               <span>Free to start</span>
@@ -278,7 +454,11 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             </div>
             <div className="flex items-center">
               <CheckCircle className="h-5 w-5 mr-2" />
-              <span>Instant access</span>
+              <span>Instant access to materials</span>
+            </div>
+            <div className="flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2" />
+              <span>24/7 support</span>
             </div>
           </div>
         </div>
@@ -287,16 +467,56 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center">
-                <GraduationCap className="h-6 w-6 text-white" />
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold">Vidyapeeth</h3>
               </div>
-              <h3 className="text-xl font-bold">Vidyapeeth</h3>
+              <p className="text-gray-400 text-sm">
+                India's leading gamified learning platform for competitive exam preparation.
+              </p>
             </div>
             
-            <div className="text-gray-400 text-sm">
+            <div>
+              <h4 className="font-semibold mb-4">Undergraduate Exams</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>JEE Main & Advanced</li>
+                <li>NEET UG</li>
+                <li>MHT CET</li>
+                <li>Board Exams</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">Graduate Exams</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>GATE</li>
+                <li>University Exams</li>
+                <li>Technical Education</li>
+                <li>Competitive Tests</li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>Help Center</li>
+                <li>Contact Us</li>
+                <li>Privacy Policy</li>
+                <li>Terms of Service</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <div className="text-gray-400 text-sm mb-4 md:mb-0">
               © 2025 Sadguru Solutions. All rights reserved.
+            </div>
+            <div className="text-gray-400 text-sm">
+              Made with ❤️ for students across India
             </div>
           </div>
         </div>
