@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { SubjectCard } from './SubjectCard'
 import { StudyMaterialsModal } from './StudyMaterialsModal'
 import { LeaderboardWidget } from './LeaderboardWidget'
+import { NewsWidget } from './NewsWidget'
 
 interface SubjectsListProps {
   semesterId: string | null | undefined
@@ -109,10 +110,18 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border p-6">
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto"></div>
-            <p className="text-gray-600 mt-2">Loading leaderboard...</p>
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto"></div>
+              <p className="text-gray-600 mt-2">Loading leaderboard...</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-gray-600 mt-2">Loading news...</p>
+            </div>
           </div>
         </div>
       </div>
@@ -165,9 +174,13 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
         </div>
       </div>
 
-      {/* Leaderboard */}
-      <div>
+      {/* Sidebar */}
+      <div className="space-y-6">
+        {/* Leaderboard */}
         <LeaderboardWidget leaderboard={leaderboard} userTotalXP={totalXP} />
+        
+        {/* News Widget */}
+        <NewsWidget />
       </div>
 
       {/* Study Materials Modal */}

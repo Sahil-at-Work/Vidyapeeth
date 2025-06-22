@@ -112,6 +112,18 @@ export interface UserAchievement {
   earned_at: string
 }
 
+export interface News {
+  id: string
+  title: string
+  description: string
+  url: string
+  image_url: string | null
+  published_at: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface QuestionnaireStep {
   step: number
   title: string
