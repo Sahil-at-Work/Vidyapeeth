@@ -62,17 +62,17 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
     const currentProgress = userProgress.find(p => p.subject_id === subjectId)
     
     if (!currentProgress || currentProgress.status === 'not_started') {
-      // Starting a new subject - give initial XP and set progress to 10%
-      await updateSubjectProgress(subjectId, 'in_progress', 10, 10, 1)
+      // Starting a new subject - use smart XP system
+      await updateSubjectProgress(subjectId, 'in_progress', 10)
     } else if (currentProgress.status === 'in_progress') {
-      // Increment progress by 10%
+      // Continuing study - use smart XP system
       const newPercentage = Math.min(100, currentProgress.completion_percentage + 10)
       const newStatus = newPercentage === 100 ? 'completed' : 'in_progress'
-      const xpGain = newPercentage - currentProgress.completion_percentage
-      const newXP = currentProgress.xp_points + xpGain
-      const newStreak = currentProgress.study_streak + 1
       
-      await updateSubjectProgress(subjectId, newStatus, newPercentage, newXP, newStreak)
+      await updateSubjectProgress(subjectId, newStatus, newPercentage)
+    } else if (currentProgress.status === 'completed') {
+      // Reviewing completed subject - use smart XP system
+      await updateSubjectProgress(subjectId, 'completed', 100)
     }
   }
 
@@ -83,20 +83,8 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
   }
 
   const handleUpdateProgress = async (subjectId: string, status: 'in_progress' | 'completed', percentage: number) => {
-    const currentProgress = userProgress.find(p => p.subject_id === subjectId)
-    
-    if (currentProgress) {
-      // Calculate XP gain based on progress increase
-      const progressIncrease = Math.max(0, percentage - currentProgress.completion_percentage)
-      const xpGain = progressIncrease
-      const newXP = currentProgress.xp_points + xpGain
-      const newStreak = status === 'completed' ? currentProgress.study_streak + 1 : currentProgress.study_streak
-      
-      await updateSubjectProgress(subjectId, status, percentage, newXP, newStreak)
-    } else {
-      // New progress entry
-      await updateSubjectProgress(subjectId, status, percentage, percentage, 1)
-    }
+    // Use the smart XP system for material interactions too
+    await updateSubjectProgress(subjectId, status, percentage)
   }
 
   if (loading || gamificationLoading) {
