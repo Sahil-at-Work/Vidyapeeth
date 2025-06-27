@@ -111,9 +111,7 @@ export function useGameification(userId: string | undefined) {
   const updateSubjectProgress = async (
     subjectId: string, 
     status: 'not_started' | 'in_progress' | 'completed',
-    completionPercentage: number = 0,
-    xpPoints?: number,
-    studyStreak?: number
+    completionPercentage?: number
   ) => {
     if (!userId) return
 
@@ -157,7 +155,7 @@ export function useGameification(userId: string | undefined) {
         newStreak = currentProgress?.study_streak || 0
         
         // Random same-day messages
-        const sameeDayMessages = [
+        const sameDayMessages = [
           "📚 Enjoy learning... +1 XP",
           "🤓 Keep going, you're doing great! +1 XP",
           "💡 Every bit of learning counts! +1 XP", 
@@ -167,12 +165,25 @@ export function useGameification(userId: string | undefined) {
           "🔍 Curious minds learn more! +1 XP",
           "📖 Another page in your journey! +1 XP"
         ]
-        toastMessage = sameeDayMessages[Math.floor(Math.random() * sameeDayMessages.length)]
+        toastMessage = sameDayMessages[Math.floor(Math.random() * sameDayMessages.length)]
       }
 
       // Calculate new total XP
       const currentXP = currentProgress?.xp_points || 0
       const newXP = currentXP + xpGain
+
+      // IMPORTANT: Set completion percentage equal to XP points (capped at 100%)
+      const newCompletionPercentage = Math.min(100, newXP)
+
+      // Determine status based on completion percentage
+      let newStatus = status
+      if (newCompletionPercentage >= 100) {
+        newStatus = 'completed'
+      } else if (newCompletionPercentage > 0) {
+        newStatus = 'in_progress'
+      } else {
+        newStatus = 'not_started'
+      }
 
       // Update progress in database
       const { data, error } = await supabase
@@ -180,8 +191,8 @@ export function useGameification(userId: string | undefined) {
         .upsert({
           user_id: userId,
           subject_id: subjectId,
-          status,
-          completion_percentage: Math.max(completionPercentage, currentProgress?.completion_percentage || 0),
+          status: newStatus,
+          completion_percentage: newCompletionPercentage,
           xp_points: newXP,
           study_streak: newStreak,
           last_activity: new Date().toISOString()
