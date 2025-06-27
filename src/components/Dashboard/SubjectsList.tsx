@@ -61,18 +61,13 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
   const handleStartStudy = async (subjectId: string) => {
     const currentProgress = userProgress.find(p => p.subject_id === subjectId)
     
+    // Simply call updateSubjectProgress - it will handle XP and percentage automatically
     if (!currentProgress || currentProgress.status === 'not_started') {
       // Starting a new subject - use smart XP system
-      await updateSubjectProgress(subjectId, 'in_progress', 10)
-    } else if (currentProgress.status === 'in_progress') {
+      await updateSubjectProgress(subjectId, 'in_progress')
+    } else {
       // Continuing study - use smart XP system
-      const newPercentage = Math.min(100, currentProgress.completion_percentage + 10)
-      const newStatus = newPercentage === 100 ? 'completed' : 'in_progress'
-      
-      await updateSubjectProgress(subjectId, newStatus, newPercentage)
-    } else if (currentProgress.status === 'completed') {
-      // Reviewing completed subject - use smart XP system
-      await updateSubjectProgress(subjectId, 'completed', 100)
+      await updateSubjectProgress(subjectId, currentProgress.status)
     }
   }
 
@@ -84,7 +79,7 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
 
   const handleUpdateProgress = async (subjectId: string, status: 'in_progress' | 'completed', percentage: number) => {
     // Use the smart XP system for material interactions too
-    await updateSubjectProgress(subjectId, status, percentage)
+    await updateSubjectProgress(subjectId, status)
   }
 
   if (loading || gamificationLoading) {
