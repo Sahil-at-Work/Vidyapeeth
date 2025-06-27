@@ -1,5 +1,5 @@
 import React from 'react'
-import { BookOpen, ExternalLink, FileText, Trophy, Zap } from 'lucide-react'
+import { BookOpen, ExternalLink, FileText, Trophy, Zap, AlertCircle } from 'lucide-react'
 import { Subject, UserProgress, SubjectMaterial } from '../../types'
 
 interface SubjectCardProps {
@@ -8,6 +8,7 @@ interface SubjectCardProps {
   materials?: SubjectMaterial
   onStartStudy: (subjectId: string) => void
   onViewMaterials: (subject: Subject, materials?: SubjectMaterial) => void
+  onShowCompletionDialog?: (subjectId: string) => void
 }
 
 export function SubjectCard({ 
@@ -15,7 +16,8 @@ export function SubjectCard({
   progress, 
   materials, 
   onStartStudy, 
-  onViewMaterials 
+  onViewMaterials,
+  onShowCompletionDialog
 }: SubjectCardProps) {
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -36,6 +38,17 @@ export function SubjectCard({
         return 'In Progress'
       default:
         return 'Not Started'
+    }
+  }
+
+  // Check if subject is at 99% and can be completed
+  const canComplete = progress?.completion_percentage === 99 && progress?.xp_points >= 99
+
+  const handleContinueClick = () => {
+    if (canComplete && onShowCompletionDialog) {
+      onShowCompletionDialog(subject.id)
+    } else {
+      onStartStudy(subject.id)
     }
   }
 
@@ -63,13 +76,25 @@ export function SubjectCard({
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-gray-600">Progress</span>
-              <span className="text-sm font-medium text-gray-900">
-                {progress.completion_percentage}%
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-900">
+                  {progress.completion_percentage}%
+                </span>
+                {canComplete && (
+                  <div className="flex items-center text-orange-600">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    <span className="text-xs font-medium">Ready to Complete!</span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  canComplete 
+                    ? 'bg-gradient-to-r from-orange-500 to-red-500 animate-pulse' 
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+                }`}
                 style={{ width: `${progress.completion_percentage}%` }}
               />
             </div>
@@ -118,10 +143,21 @@ export function SubjectCard({
         {/* Action Buttons */}
         <div className="flex space-x-3">
           <button
-            onClick={() => onStartStudy(subject.id)}
-            className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 px-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium text-sm"
+            onClick={handleContinueClick}
+            className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+              canComplete
+                ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700 animate-pulse'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
+            }`}
           >
-            {progress?.status === 'completed' ? 'Review' : progress?.status === 'in_progress' ? 'Continue' : 'Start Study'}
+            {canComplete 
+              ? 'Complete Subject!' 
+              : progress?.status === 'completed' 
+                ? 'Review' 
+                : progress?.status === 'in_progress' 
+                  ? 'Continue' 
+                  : 'Start Study'
+            }
           </button>
           <button
             onClick={() => onViewMaterials(subject, materials)}

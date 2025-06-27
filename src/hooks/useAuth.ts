@@ -79,9 +79,24 @@ export function useAuth() {
     try {
       console.log('Signing out user')
       const { error } = await supabase.auth.signOut()
+      
+      // If the error indicates the session is already missing or invalid,
+      // treat it as a successful logout to improve user experience
       if (error) {
+        const isSessionMissingError = 
+          error.message?.includes('Auth session missing') ||
+          error.message?.includes('Session from session_id claim in JWT does not exist') ||
+          (error as any)?.code === 'session_not_found'
+        
+        if (isSessionMissingError) {
+          console.log('Session already invalid, treating as successful logout')
+          return { error: null }
+        }
+        
         console.error('Signout error:', error)
+        return { error }
       }
+      
       return { error }
     } catch (error) {
       console.error('Signout exception:', error)

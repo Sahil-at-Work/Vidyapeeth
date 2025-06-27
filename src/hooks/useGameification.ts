@@ -108,10 +108,145 @@ export function useGameification(userId: string | undefined) {
     }, 3000)
   }
 
+  const triggerCelebration = () => {
+    // Create celebration animation with confetti
+    const celebration = document.createElement('div')
+    celebration.className = 'fixed inset-0 pointer-events-none z-50'
+    celebration.innerHTML = `
+      <div class="celebration-container">
+        <style>
+          .celebration-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+          }
+          
+          .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f39c12;
+            animation: confetti-fall 3s linear forwards;
+          }
+          
+          .confetti:nth-child(odd) {
+            background: #e74c3c;
+            width: 8px;
+            height: 8px;
+            animation-duration: 3.5s;
+          }
+          
+          .confetti:nth-child(3n) {
+            background: #3498db;
+            width: 6px;
+            height: 6px;
+            animation-duration: 2.5s;
+          }
+          
+          .confetti:nth-child(4n) {
+            background: #2ecc71;
+            width: 12px;
+            height: 12px;
+            animation-duration: 4s;
+          }
+          
+          .confetti:nth-child(5n) {
+            background: #9b59b6;
+            width: 8px;
+            height: 8px;
+            animation-duration: 3.2s;
+          }
+          
+          @keyframes confetti-fall {
+            0% {
+              transform: translateY(-100vh) rotate(0deg);
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(100vh) rotate(720deg);
+              opacity: 0;
+            }
+          }
+          
+          .celebration-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            animation: celebration-bounce 0.6s ease-out;
+            z-index: 100;
+          }
+          
+          @keyframes celebration-bounce {
+            0% {
+              transform: translate(-50%, -50%) scale(0.3);
+              opacity: 0;
+            }
+            50% {
+              transform: translate(-50%, -50%) scale(1.1);
+            }
+            100% {
+              transform: translate(-50%, -50%) scale(1);
+              opacity: 1;
+            }
+          }
+          
+          .celebration-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+          
+          .celebration-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+          }
+        </style>
+        
+        <div class="celebration-message">
+          <div class="celebration-title">🎉 CONGRATULATIONS! 🎉</div>
+          <div class="celebration-subtitle">Subject Completed Successfully!</div>
+          <div style="margin-top: 1rem; font-size: 1rem;">
+            🏆 You've mastered this subject! 🏆
+          </div>
+        </div>
+      </div>
+    `
+    
+    // Add confetti particles
+    for (let i = 0; i < 50; i++) {
+      const confetti = document.createElement('div')
+      confetti.className = 'confetti'
+      confetti.style.left = Math.random() * 100 + '%'
+      confetti.style.animationDelay = Math.random() * 3 + 's'
+      confetti.style.animationDuration = (Math.random() * 2 + 2) + 's'
+      celebration.querySelector('.celebration-container')?.appendChild(confetti)
+    }
+    
+    document.body.appendChild(celebration)
+    
+    // Remove celebration after animation
+    setTimeout(() => {
+      document.body.removeChild(celebration)
+    }, 5000)
+  }
+
   const updateSubjectProgress = async (
     subjectId: string, 
     status: 'not_started' | 'in_progress' | 'completed',
-    completionPercentage?: number
+    completionPercentage?: number,
+    gateQuestionsCompleted?: boolean
   ) => {
     if (!userId) return
 
@@ -119,7 +254,37 @@ export function useGameification(userId: string | undefined) {
       // Get current progress to check last activity date
       const currentProgress = userProgress.find(p => p.subject_id === subjectId)
       
-      // Get today's date in YYYY-MM-DD format
+      // If this is a manual completion (status = 'completed' and completionPercentage = 100)
+      if (status === 'completed' && completionPercentage === 100) {
+        // Force completion regardless of GATE questions
+        const { data, error } = await supabase
+          .from('user_progress')
+          .upsert({
+            user_id: userId,
+            subject_id: subjectId,
+            status: 'completed',
+            completion_percentage: 100,
+            xp_points: Math.max(100, currentProgress?.xp_points || 0), // Ensure XP is at least 100
+            study_streak: currentProgress?.study_streak || 0,
+            gate_questions_completed: gateQuestionsCompleted || true, // Mark GATE as completed
+            last_activity: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,subject_id'
+          })
+          .select()
+
+        if (error) throw error
+
+        // Show completion message and trigger celebration
+        showToast("🎉 Subject completed! Congratulations! 🎉")
+        setTimeout(() => triggerCelebration(), 500)
+
+        // Refresh data to get the latest changes
+        await fetchGameificationData()
+        return { data, error: null }
+      }
+
+      // Regular progress update logic
       const today = new Date().toISOString().split('T')[0]
       const lastActivityDate = currentProgress?.last_activity 
         ? new Date(currentProgress.last_activity).toISOString().split('T')[0]
@@ -172,13 +337,27 @@ export function useGameification(userId: string | undefined) {
       const currentXP = currentProgress?.xp_points || 0
       const newXP = currentXP + xpGain
 
-      // IMPORTANT: Set completion percentage equal to XP points (capped at 100%)
-      const newCompletionPercentage = Math.min(100, newXP)
+      // Set completion percentage based on provided value or XP
+      let newCompletionPercentage: number
+      
+      if (completionPercentage !== undefined) {
+        // Use provided completion percentage
+        newCompletionPercentage = Math.min(100, completionPercentage)
+      } else {
+        // Default behavior: cap at 99% unless GATE questions are completed
+        if (gateQuestionsCompleted && newXP >= 99) {
+          newCompletionPercentage = Math.min(100, newXP)
+        } else {
+          newCompletionPercentage = Math.min(99, newXP)
+        }
+      }
 
-      // Determine status based on completion percentage
+      // Determine status based on completion percentage and GATE questions
       let newStatus = status
-      if (newCompletionPercentage >= 100) {
+      if (newCompletionPercentage >= 100 && (gateQuestionsCompleted || status === 'completed')) {
         newStatus = 'completed'
+        // Trigger celebration animation for 100% completion
+        setTimeout(() => triggerCelebration(), 500)
       } else if (newCompletionPercentage > 0) {
         newStatus = 'in_progress'
       } else {
@@ -195,6 +374,7 @@ export function useGameification(userId: string | undefined) {
           completion_percentage: newCompletionPercentage,
           xp_points: newXP,
           study_streak: newStreak,
+          gate_questions_completed: gateQuestionsCompleted || currentProgress?.gate_questions_completed || false,
           last_activity: new Date().toISOString()
         }, {
           onConflict: 'user_id,subject_id'
