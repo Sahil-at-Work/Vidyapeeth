@@ -81,6 +81,33 @@ export function useGameification(userId: string | undefined) {
     }
   }
 
+  const showToast = (message: string) => {
+    // Create a simple toast notification
+    const toast = document.createElement('div')
+    toast.className = 'fixed top-4 right-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 ease-in-out'
+    toast.style.transform = 'translateX(100%)'
+    toast.innerHTML = `
+      <div class="flex items-center space-x-2">
+        <span>${message}</span>
+      </div>
+    `
+    
+    document.body.appendChild(toast)
+    
+    // Animate in
+    setTimeout(() => {
+      toast.style.transform = 'translateX(0)'
+    }, 100)
+    
+    // Animate out and remove
+    setTimeout(() => {
+      toast.style.transform = 'translateX(100%)'
+      setTimeout(() => {
+        document.body.removeChild(toast)
+      }, 300)
+    }, 3000)
+  }
+
   const updateSubjectProgress = async (
     subjectId: string, 
     status: 'not_started' | 'in_progress' | 'completed',
@@ -91,29 +118,72 @@ export function useGameification(userId: string | undefined) {
     if (!userId) return
 
     try {
-      // Get current progress to calculate incremental values
+      // Get current progress to check last activity date
       const currentProgress = userProgress.find(p => p.subject_id === subjectId)
       
-      // Calculate XP points based on progress increase
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date().toISOString().split('T')[0]
+      const lastActivityDate = currentProgress?.last_activity 
+        ? new Date(currentProgress.last_activity).toISOString().split('T')[0]
+        : null
+
+      // Determine if this is a new day or same day study session
+      const isNewDay = !lastActivityDate || lastActivityDate !== today
+      
+      // Calculate XP and streak based on day
+      let xpGain: number
+      let newStreak: number
+      let toastMessage: string
+
+      if (isNewDay) {
+        // New day - award 10 XP and increment streak
+        xpGain = 10
+        newStreak = (currentProgress?.study_streak || 0) + 1
+        
+        // Random welcome back messages
+        const welcomeMessages = [
+          "🌟 Welcome back, learner! +10 XP",
+          "🎯 Great to see you again! +10 XP", 
+          "🚀 Ready for another day of learning? +10 XP",
+          "💪 Welcome back, champion! +10 XP",
+          "🔥 Your learning streak continues! +10 XP",
+          "⭐ Another day, another step forward! +10 XP",
+          "🎉 Welcome back to your learning journey! +10 XP"
+        ]
+        toastMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)]
+      } else {
+        // Same day - award 1 XP, keep same streak
+        xpGain = 1
+        newStreak = currentProgress?.study_streak || 0
+        
+        // Random same-day messages
+        const sameeDayMessages = [
+          "📚 Enjoy learning... +1 XP",
+          "🤓 Keep going, you're doing great! +1 XP",
+          "💡 Every bit of learning counts! +1 XP", 
+          "🎓 Small steps, big progress! +1 XP",
+          "✨ Learning never stops! +1 XP",
+          "🌱 Growing your knowledge! +1 XP",
+          "🔍 Curious minds learn more! +1 XP",
+          "📖 Another page in your journey! +1 XP"
+        ]
+        toastMessage = sameeDayMessages[Math.floor(Math.random() * sameeDayMessages.length)]
+      }
+
+      // Calculate new total XP
       const currentXP = currentProgress?.xp_points || 0
-      const calculatedXP = xpPoints !== undefined ? xpPoints : 
-        (completionPercentage > (currentProgress?.completion_percentage || 0) ? 
-          currentXP + (completionPercentage - (currentProgress?.completion_percentage || 0)) : currentXP)
+      const newXP = currentXP + xpGain
 
-      // Calculate study streak
-      const calculatedStreak = studyStreak !== undefined ? studyStreak :
-        (status === 'in_progress' || status === 'completed' ? 
-          (currentProgress?.study_streak || 0) + 1 : currentProgress?.study_streak || 0)
-
+      // Update progress in database
       const { data, error } = await supabase
         .from('user_progress')
         .upsert({
           user_id: userId,
           subject_id: subjectId,
           status,
-          completion_percentage: completionPercentage,
-          xp_points: calculatedXP,
-          study_streak: calculatedStreak,
+          completion_percentage: Math.max(completionPercentage, currentProgress?.completion_percentage || 0),
+          xp_points: newXP,
+          study_streak: newStreak,
           last_activity: new Date().toISOString()
         }, {
           onConflict: 'user_id,subject_id'
@@ -122,7 +192,10 @@ export function useGameification(userId: string | undefined) {
 
       if (error) throw error
 
-      // Refresh data
+      // Show toast message
+      showToast(toastMessage)
+
+      // Refresh data to get the latest changes
       await fetchGameificationData()
 
       return { data, error: null }
