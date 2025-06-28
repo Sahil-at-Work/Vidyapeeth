@@ -334,10 +334,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-center mb-4">
-                <img src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&fit=crop" alt="JEE Topper" className="w-12 h-12 rounded-full mr-4" />
+                <img src="https://media.licdn.com/dms/image/v2/D4D22AQG1DtRKiohVXw/feedshare-shrink_2048_1536/B4DZQ8uhvZHcAo-/0/1736185619944?e=1753920000&v=beta&t=XmLKIEa84LWB77pklSrPlBBdo5D7SwLxdjjC0O1zHZs" alt="JEE Topper" className="w-12 h-12 rounded-full mr-4" />
                 <div>
-                  <div className="font-semibold text-gray-900">Arjun Sharma</div>
-                  <div className="text-sm text-gray-600">JEE Advanced AIR 47</div>
+                  <div className="font-semibold text-gray-900">Bhavya Shah</div>
+                  <div className="text-sm text-gray-600">VIT-CS aluminus</div>
                 </div>
               </div>
               <p className="text-gray-600 italic">
@@ -347,27 +347,27 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-center mb-4">
-                <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&fit=crop" alt="NEET Topper" className="w-12 h-12 rounded-full mr-4" />
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQEhl_uARMWe3Q/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1696930496555?e=1756339200&v=beta&t=NLltMdSsKr57rrcH4P-YLNdlu1J8lErF-IRgAPoKfoc" alt="NEET Topper" className="w-12 h-12 rounded-full mr-4" />
                 <div>
-                  <div className="font-semibold text-gray-900">Priya Patel</div>
-                  <div className="text-sm text-gray-600">NEET AIR 156</div>
+                  <div className="font-semibold text-gray-900">Kaushik Salunkhe</div>
+                  <div className="text-sm text-gray-600">IUCAA Jr. Researcher</div>
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "The comprehensive study materials and mock tests on Vidyapeeth were exactly what I needed to crack NEET with a top rank."
+                "The comprehensive study materials and mock tests on Vidyapeeth were exactly what I needed to crack my placement prep with a top rank."
               </p>
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <div className="flex items-center mb-4">
-                <img src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&fit=crop" alt="GATE Topper" className="w-12 h-12 rounded-full mr-4" />
+                <img src="https://media.licdn.com/dms/image/v2/D4D03AQFpK2PsphpwYQ/profile-displayphoto-shrink_800_800/B4DZW0uDCyHYAg-/0/1742493728182?e=1756339200&v=beta&t=nu4KaIAvJluYFws6blEjtoHL3lJnOosicgelckFwmv4" alt="GATE Topper" className="w-12 h-12 rounded-full mr-4" />
                 <div>
-                  <div className="font-semibold text-gray-900">Rahul Kumar</div>
-                  <div className="text-sm text-gray-600">GATE CS AIR 23</div>
+                  <div className="font-semibold text-gray-900">Lavanya Saindane</div>
+                  <div className="text-sm text-gray-600">VIT-E&TC</div>
                 </div>
               </div>
               <p className="text-gray-600 italic">
-                "The structured approach and competitive environment on Vidyapeeth helped me stay motivated throughout my GATE preparation."
+                "The structured approach and competitive environment on Vidyapeeth helped me stay motivated throughout my GATE and college preparation."
               </p>
             </div>
           </div>
