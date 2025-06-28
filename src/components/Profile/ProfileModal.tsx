@@ -40,11 +40,9 @@ const AVATAR_OPTIONS = [
   }
 ]
 
-const SECRET_KEY = 'Sadguru2002'
-
 export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: ProfileModalProps) {
   const { user, signOut } = useAuth()
-  const { updateProfile } = useUserProfile(user?.id)
+  const { updateProfile, validatePrivateKey } = useUserProfile(user?.id)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showSecretKeyDialog, setShowSecretKeyDialog] = useState(false)
@@ -175,14 +173,16 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
     setSecretKeyError('')
   }
 
-  const handleSecretKeySubmit = () => {
-    if (secretKey === SECRET_KEY) {
+  const handleSecretKeySubmit = async () => {
+    const result = await validatePrivateKey(secretKey)
+    
+    if (result.data === true) {
       setShowSecretKeyDialog(false)
       setShowAcademicUpdate(true)
       setSecretKeyError('')
       setSecretKey('')
     } else {
-      setSecretKeyError('Secret Key Incorrect')
+      setSecretKeyError('Invalid Private Key')
       setSecretKey('')
     }
   }
@@ -614,9 +614,9 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
               <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Lock className="h-8 w-8 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Enter Secret Key</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Enter Your Private Key</h3>
               <p className="text-gray-600 text-sm">
-                Please enter the secret key to update your academic information
+                Please enter your personal private key to update your academic information. Contact support if you don't have your key.
               </p>
             </div>
 
@@ -627,7 +627,7 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                   value={secretKey}
                   onChange={(e) => setSecretKey(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-lg tracking-wider"
-                  placeholder="Enter secret key"
+                  placeholder="Enter your private key"
                   onKeyPress={(e) => e.key === 'Enter' && handleSecretKeySubmit()}
                   autoFocus
                 />
@@ -636,6 +636,12 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                     {secretKeyError}
                   </p>
                 )}
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-blue-800 text-sm">
+                  <strong>Note:</strong> Your private key is provided by the administrator. If you don't have it, please contact support.
+                </p>
               </div>
 
               <div className="flex space-x-3">

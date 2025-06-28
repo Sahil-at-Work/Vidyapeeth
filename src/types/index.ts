@@ -45,6 +45,7 @@ export interface UserProfile {
   profile_image: string | null
   bio: string | null
   location: string | null
+  academic_update_key: string | null
 }
 
 export interface Subscription {

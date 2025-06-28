@@ -130,11 +130,33 @@ export function useUserProfile(userId: string | undefined) {
     }
   }
 
+  const validatePrivateKey = async (key: string) => {
+    if (!userId) return { data: false, error: { message: 'No user ID provided' } }
+
+    try {
+      const { data, error } = await supabase.rpc('validate_user_private_key', {
+        p_user_id: userId,
+        p_key: key
+      })
+
+      if (error) {
+        console.error('Error validating private key:', error)
+        return { data: false, error }
+      }
+
+      return { data, error: null }
+    } catch (error) {
+      console.error('Exception in validatePrivateKey:', error)
+      return { data: false, error: error as any }
+    }
+  }
+
   return {
     profile,
     loading,
     createProfile,
     updateProfile,
+    validatePrivateKey,
     refetch: fetchProfile,
   }
 }
