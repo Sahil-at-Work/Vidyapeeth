@@ -101,22 +101,22 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                   <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="NEET Student Success" />
                   <img className="w-8 h-8 rounded-full border-2 border-white" src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&fit=crop" alt="GATE Student Success" />
                 </div>
-                <span className="text-sm">Join 50,000+ successful students</span>
+                <span className="text-sm">Join 6,000+ successful students</span>
               </div>
             </div>
 
             {/* Success Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-2">98%</div>
-                <div className="text-gray-600">Success Rate</div>
+                <div className="text-3xl font-bold text-blue-600 mb-2">5</div>
+                <div className="text-gray-600">Universities+Boards</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">50K+</div>
+                <div className="text-3xl font-bold text-green-600 mb-2">6000+</div>
                 <div className="text-gray-600">Students Enrolled</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-2">1000+</div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">100+</div>
                 <div className="text-gray-600">Study Materials</div>
               </div>
               <div className="text-center">
