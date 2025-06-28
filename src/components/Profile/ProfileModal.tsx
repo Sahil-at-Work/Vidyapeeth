@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, User, Phone, Calendar, MapPin, Edit3, Save, Camera, GraduationCap, Lock, Unlock } from 'lucide-react'
+import { X, User, Phone, Calendar, MapPin, Edit3, Save, Camera, GraduationCap, Lock, Unlock, Crown, Star, Sparkles } from 'lucide-react'
 import { UserProfile, ProfileFormData, University, Department, Semester } from '../../types'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useAuth } from '../../hooks/useAuth'
@@ -313,50 +313,93 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
           </div>
 
           {/* Academic Information Section */}
-          <div className="mb-8 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
-            <div className="flex items-center justify-between mb-4">
+          <div className="mb-8 p-6 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-xl border-2 border-gradient-to-r from-amber-200 to-orange-200">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <GraduationCap className="h-5 w-5 text-indigo-600 mr-2" />
-                <h4 className="text-lg font-semibold text-gray-900">Academic Information</h4>
+                <div className="bg-gradient-to-r from-amber-500 to-orange-500 w-10 h-10 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                  <Crown className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                    Academic Information
+                  </h4>
+                  <p className="text-sm text-amber-700">Upgrade to GOLD for full access</p>
+                </div>
               </div>
               {!showAcademicUpdate && (
                 <button
                   onClick={handleUpdateAcademicClick}
-                  className="flex items-center px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+                  className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white rounded-xl hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  <Edit3 className="h-4 w-4 mr-1" />
-                  Update Academic Info
+                  <Crown className="h-4 w-4 mr-2" />
+                  Upgrade to GOLD
                 </button>
               )}
             </div>
 
             {!showAcademicUpdate ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">University</p>
-                  <p className="text-gray-900">{getCurrentUniversityName()}</p>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <p className="text-sm font-medium text-amber-700">University</p>
+                    <p className="text-gray-900 font-medium">{getCurrentUniversityName()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-amber-700">Department</p>
+                    <p className="text-gray-900 font-medium">{getCurrentDepartmentName()}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-amber-700">Semester</p>
+                    <p className="text-gray-900 font-medium">{getCurrentSemesterName()}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Department</p>
-                  <p className="text-gray-900">{getCurrentDepartmentName()}</p>
+
+                {/* GOLD Membership Features */}
+                <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg p-4 border border-amber-200">
+                  <div className="flex items-center mb-3">
+                    <Star className="h-5 w-5 text-amber-600 mr-2" />
+                    <h5 className="font-bold text-amber-800">GOLD Membership Features</h5>
+                    <span className="ml-auto bg-gradient-to-r from-amber-600 to-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                      ₹19 INR
+                    </span>
+                  </div>
+                  <ul className="space-y-2 text-sm text-amber-800">
+                    <li className="flex items-center">
+                      <Sparkles className="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                      <span><strong>Exclusive Community</strong> - Connect with fellow students using the app</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Sparkles className="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                      <span><strong>PRO Drive Access</strong> - Premium study materials, varied syllabuses & tests</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Sparkles className="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                      <span><strong>Personalized Support</strong> - One-on-one guidance and assistance</span>
+                    </li>
+                    <li className="flex items-center">
+                      <Sparkles className="h-4 w-4 text-amber-600 mr-2 flex-shrink-0" />
+                      <span><strong>Exclusive Goodies</strong> - Special rewards, badges & achievements</span>
+                    </li>
+                  </ul>
+                  <div className="mt-4 p-3 bg-gradient-to-r from-amber-200 to-orange-200 rounded-lg">
+                    <p className="text-xs text-amber-900 font-medium text-center">
+                      💎 Contact support to upgrade and receive your private key for academic updates!
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Semester</p>
-                  <p className="text-gray-900">{getCurrentSemesterName()}</p>
-                </div>
-              </div>
+              </>
             ) : (
               <div className="space-y-4">
                 {/* Academic Update Form */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-amber-700 mb-2">
                       University
                     </label>
                     <select
                       value={selectedUniversity}
                       onChange={(e) => setSelectedUniversity(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-gradient-to-r from-amber-50 to-orange-50"
                     >
                       <option value="">Select University</option>
                       {universities.map((university) => (
@@ -368,14 +411,14 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-amber-700 mb-2">
                       Department
                     </label>
                     <select
                       value={selectedDepartment}
                       onChange={(e) => setSelectedDepartment(e.target.value)}
                       disabled={!selectedUniversity}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
+                      className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100 bg-gradient-to-r from-amber-50 to-orange-50"
                     >
                       <option value="">Select Department</option>
                       {departments.map((department) => (
@@ -387,14 +430,14 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-amber-700 mb-2">
                       Semester
                     </label>
                     <select
                       value={selectedSemester}
                       onChange={(e) => setSelectedSemester(e.target.value)}
                       disabled={!selectedDepartment}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100"
+                      className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent disabled:bg-gray-100 bg-gradient-to-r from-amber-50 to-orange-50"
                     >
                       <option value="">Select Semester</option>
                       {semesters.map((semester) => (
@@ -408,14 +451,14 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                   <div className="flex space-x-3">
                     <button
                       onClick={() => setShowAcademicUpdate(false)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleAcademicUpdate}
                       disabled={loading || !selectedUniversity || !selectedDepartment || !selectedSemester}
-                      className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white px-4 py-2 rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                     >
                       {loading ? 'Updating...' : 'Update Academic Info'}
                     </button>
@@ -606,17 +649,19 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
         </div>
       </div>
 
-      {/* Secret Key Dialog */}
+      {/* Private Key Dialog */}
       {showSecretKeyDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-60">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
             <div className="text-center mb-6">
-              <div className="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Lock className="h-8 w-8 text-indigo-600" />
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Lock className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Enter Your Private Key</h3>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
+                Enter Private Key & Verify
+              </h3>
               <p className="text-gray-600 text-sm">
-                Please enter your personal private key to update your academic information. Contact support if you don't have your key.
+                Enter your GOLD membership private key to update academic information
               </p>
             </div>
 
@@ -626,7 +671,7 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                   type="password"
                   value={secretKey}
                   onChange={(e) => setSecretKey(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-center text-lg tracking-wider"
+                  className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50"
                   placeholder="Enter your private key"
                   onKeyPress={(e) => e.key === 'Enter' && handleSecretKeySubmit()}
                   autoFocus
@@ -638,9 +683,13 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                 )}
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-blue-800 text-sm">
-                  <strong>Note:</strong> Your private key is provided by the administrator. If you don't have it, please contact support.
+              <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Crown className="h-4 w-4 text-amber-600 mr-2" />
+                  <span className="text-sm font-semibold text-amber-800">GOLD Membership Required</span>
+                </div>
+                <p className="text-amber-800 text-sm">
+                  Your private key is provided after upgrading to GOLD membership (₹19). Contact support to upgrade and receive your key!
                 </p>
               </div>
 
@@ -651,16 +700,16 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                     setSecretKey('')
                     setSecretKeyError('')
                   }}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                  className="flex-1 px-4 py-3 border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSecretKeySubmit}
-                  className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium flex items-center justify-center"
+                  className="flex-1 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white px-4 py-3 rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 transition-all duration-200 font-medium flex items-center justify-center shadow-lg"
                 >
                   <Unlock className="h-4 w-4 mr-2" />
-                  Verify
+                  Verify & Continue
                 </button>
               </div>
             </div>

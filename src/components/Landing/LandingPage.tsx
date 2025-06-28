@@ -62,9 +62,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
             {/* Main Heading - SEO Optimized */}
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-              Master
+              <span className="block text-4xl md:text-5xl mt-2">Master your</span>
               <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                JEE • NEET • GATE
+                VIDYAPEETH
               </span>
               <span className="block text-4xl md:text-5xl mt-2">& All Competitive Exams</span>
             </h1>
