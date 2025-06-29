@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles } from 'lucide-react'
-import { Subject, SubjectMaterial, GateQuestion } from '../../types'
+import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock } from 'lucide-react'
+import { Subject, SubjectMaterial, GateQuestion, UserProfile } from '../../types'
+import { supabase } from '../../lib/supabase'
 
 interface StudyMaterialsModalProps {
   isOpen: boolean
   onClose: () => void
   subject: Subject
   materials?: SubjectMaterial
+  profile?: UserProfile | null
   onUpdateProgress: (subjectId: string, status: 'in_progress' | 'completed', percentage: number, gateCompleted?: boolean) => void
 }
 
@@ -17,15 +19,29 @@ export function StudyMaterialsModal({
   onClose, 
   subject, 
   materials,
+  profile,
   onUpdateProgress 
 }: StudyMaterialsModalProps) {
-  const [activeTab, setActiveTab] = useState<'syllabus' | 'materials' | 'questions'>('syllabus')
+  const [activeTab, setActiveTab] = useState<'syllabus' | 'materials' | 'questions' | 'dpp'>('syllabus')
   const [selectedQuestion, setSelectedQuestion] = useState<number | null>(null)
   const [userAnswers, setUserAnswers] = useState<{ [key: number]: number }>({})
   const [showResults, setShowResults] = useState(false)
   const [showCompletionDialog, setShowCompletionDialog] = useState(false)
+  const [showGoldKeyDialog, setShowGoldKeyDialog] = useState(false)
+  const [goldKey, setGoldKey] = useState('')
+  const [goldKeyError, setGoldKeyError] = useState('')
+  const [hasGoldAccess, setHasGoldAccess] = useState(false)
+  const [validatingKey, setValidatingKey] = useState(false)
 
-  if (!isOpen) return null
+  // Auto-dismiss error message after 2 seconds
+  React.useEffect(() => {
+    if (goldKeyError) {
+      const timer = setTimeout(() => {
+        setGoldKeyError('')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [goldKeyError])
 
   const handleQuestionAnswer = (questionIndex: number, answerIndex: number) => {
     setUserAnswers(prev => ({ ...prev, [questionIndex]: answerIndex }))
@@ -65,6 +81,89 @@ export function StudyMaterialsModal({
     }
   }
 
+  const handleDPPClick = (link: string) => {
+    // Update progress when accessing DPP materials
+    onUpdateProgress(subject.id, 'in_progress', 15)
+    window.open(link, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleGoldKeySubmit = async () => {
+    if (!goldKey.trim()) {
+      setGoldKeyError('Please enter your GOLD membership private key')
+      return
+    }
+
+    if (!profile?.id) {
+      setGoldKeyError('User profile not found')
+      return
+    }
+
+    setValidatingKey(true)
+    setGoldKeyError('')
+
+    try {
+      // Call the Supabase function to validate the private key
+      const { data, error } = await supabase.rpc('validate_user_private_key', {
+        p_user_id: profile.id,
+        p_key: goldKey.trim()
+      })
+
+      if (error) {
+        console.error('Error validating private key:', error)
+        setGoldKeyError('Error validating private key. Please try again.')
+        return
+      }
+
+      if (data === true) {
+        setHasGoldAccess(true)
+        setShowGoldKeyDialog(false)
+        setGoldKeyError('')
+        setGoldKey('')
+      } else {
+        setGoldKeyError('Invalid Private Key. Please check and try again.')
+        setGoldKey('')
+      }
+    } catch (error) {
+      console.error('Exception validating private key:', error)
+      setGoldKeyError('Error validating private key. Please try again.')
+    } finally {
+      setValidatingKey(false)
+    }
+  }
+
+  const handleKeyDialogClose = () => {
+    setShowGoldKeyDialog(false)
+    setGoldKey('')
+    setGoldKeyError('')
+    setValidatingKey(false)
+  }
+
+  // Check if personal profile is completed (Name, Phone, DOB, Location, Bio)
+  const isPersonalProfileCompleted = () => {
+    if (!profile) return false
+    
+    const hasDisplayName = profile.display_name && profile.display_name.trim() !== ''
+    const hasPhoneNumber = profile.phone_number && profile.phone_number.trim() !== ''
+    const hasDateOfBirth = profile.date_of_birth && profile.date_of_birth.trim() !== ''
+    const hasLocation = profile.location && profile.location.trim() !== ''
+    const hasBio = profile.bio && profile.bio.trim() !== ''
+    
+    return hasDisplayName && hasPhoneNumber && hasDateOfBirth && hasLocation && hasBio
+  }
+
+  const getMissingFields = () => {
+    if (!profile) return ['Name', 'Phone Number', 'Date of Birth', 'Location', 'Bio']
+    
+    const missing = []
+    if (!profile.display_name || profile.display_name.trim() === '') missing.push('Name')
+    if (!profile.phone_number || profile.phone_number.trim() === '') missing.push('Phone Number')
+    if (!profile.date_of_birth || profile.date_of_birth.trim() === '') missing.push('Date of Birth')
+    if (!profile.location || profile.location.trim() === '') missing.push('Location')
+    if (!profile.bio || profile.bio.trim() === '') missing.push('Bio')
+    
+    return missing
+  }
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600'
     if (score >= 60) return 'text-yellow-600'
@@ -79,6 +178,11 @@ export function StudyMaterialsModal({
     
     return totalQuestions > 0 && correctAnswers === totalQuestions
   }
+
+  const isProfileCompleted = isPersonalProfileCompleted()
+  const missingFields = getMissingFields()
+
+  if (!isOpen) return null
 
   return (
     <>
@@ -135,6 +239,20 @@ export function StudyMaterialsModal({
               >
                 <Brain className="h-4 w-4 inline mr-2" />
                 GATE Questions ({materials?.gate_questions?.length || 0})
+              </button>
+              <button
+                onClick={() => setActiveTab('dpp')}
+                className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors relative ${
+                  activeTab === 'dpp'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <BookOpen className="h-4 w-4 inline mr-2" />
+                DPP Materials ({materials?.dpp_materials?.length || 0})
+                {!isProfileCompleted && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                )}
               </button>
             </div>
           </div>
@@ -301,6 +419,178 @@ export function StudyMaterialsModal({
                 )}
               </div>
             )}
+
+            {activeTab === 'dpp' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Daily Practice Problems (DPP)</h3>
+                  {(!isProfileCompleted || !hasGoldAccess) && (
+                    <div className="flex items-center text-amber-600">
+                      <Crown className="h-4 w-4 mr-2" />
+                      <span className="text-sm font-medium">GOLD Membership Required</span>
+                    </div>
+                  )}
+                </div>
+
+                {!isProfileCompleted ? (
+                  <div className="text-center py-12">
+                    <div className="bg-orange-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Lock className="h-10 w-10 text-orange-600" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-gray-900 mb-4">Complete Your Profile</h4>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      Complete your personal profile to unlock access to Daily Practice Problems and enhance your Vidyapeeth Journey.
+                    </p>
+                    
+                    {/* Missing Fields */}
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto mb-6">
+                      <div className="flex items-center justify-center mb-2">
+                        <Settings className="h-5 w-5 text-red-600 mr-2" />
+                        <span className="text-sm font-semibold text-red-800">Missing Information:</span>
+                      </div>
+                      <ul className="text-sm text-red-700 space-y-1">
+                        {missingFields.map((field, index) => (
+                          <li key={index}>• {field}</li>
+                        ))}
+                      </ul>
+                      <div className="mt-3">
+                        <button
+                          onClick={onClose}
+                          className="text-sm text-red-600 hover:text-red-700 font-medium underline"
+                        >
+                          Go to Profile Settings to complete
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg p-4 max-w-md mx-auto">
+                      <div className="flex items-center justify-center mb-2">
+                        <Sparkles className="h-5 w-5 text-orange-600 mr-2" />
+                        <span className="text-sm font-semibold text-orange-800">What you'll unlock:</span>
+                      </div>
+                      <ul className="text-sm text-orange-700 space-y-1">
+                        <li>• Daily Practice Problems for each subject</li>
+                        <li>• Topic-wise problem sets</li>
+                        <li>• Previous year question patterns</li>
+                        <li>• Difficulty-graded problems</li>
+                        <li>• Enhanced learning experience</li>
+                      </ul>
+                    </div>
+                  </div>
+                ) : !hasGoldAccess ? (
+                  <div className="text-center py-12">
+                    <div className="bg-gradient-to-r from-amber-100 to-orange-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                      <Crown className="h-10 w-10 text-amber-600" />
+                    </div>
+                    <h4 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-4">
+                      Upgrade to GOLD Membership
+                    </h4>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      Access exclusive Daily Practice Problems and premium features with GOLD membership.
+                    </p>
+
+                    {/* GOLD Membership Features */}
+                    <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 border-2 border-gradient-to-r from-amber-200 to-orange-200 rounded-xl p-6 max-w-lg mx-auto mb-6">
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 w-10 h-10 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                          <Crown className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <h5 className="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                            GOLD Membership Features
+                          </h5>
+                          <p className="text-sm text-amber-700">Only ₹19 INR</p>
+                        </div>
+                        <span className="ml-auto bg-gradient-to-r from-amber-600 to-orange-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                          ₹19 INR
+                        </span>
+                      </div>
+                      <ul className="space-y-3 text-sm text-amber-800">
+                        <li className="flex items-center">
+                          <Star className="h-4 w-4 text-amber-600 mr-3 flex-shrink-0" />
+                          <span><strong>Exclusive Community</strong> - Connect with fellow students using the app</span>
+                        </li>
+                        <li className="flex items-center">
+                          <Star className="h-4 w-4 text-amber-600 mr-3 flex-shrink-0" />
+                          <span><strong>PRO Drive Access</strong> - Premium study materials, varied syllabuses & tests</span>
+                        </li>
+                        <li className="flex items-center">
+                          <Star className="h-4 w-4 text-amber-600 mr-3 flex-shrink-0" />
+                          <span><strong>Daily Practice Problems</strong> - Topic-wise DPPs for all subjects</span>
+                        </li>
+                        <li className="flex items-center">
+                          <Star className="h-4 w-4 text-amber-600 mr-3 flex-shrink-0" />
+                          <span><strong>Personalized Support</strong> - One-on-one guidance and assistance</span>
+                        </li>
+                        <li className="flex items-center">
+                          <Star className="h-4 w-4 text-amber-600 mr-3 flex-shrink-0" />
+                          <span><strong>Exclusive Goodies</strong> - Special rewards, badges & achievements</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="space-y-4">
+                      <button
+                        onClick={() => setShowGoldKeyDialog(true)}
+                        className="bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white px-8 py-3 rounded-xl hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center mx-auto"
+                      >
+                        <Crown className="h-5 w-5 mr-2" />
+                        Enter Private Key & Verify
+                      </button>
+
+                      <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200 rounded-lg p-4 max-w-md mx-auto">
+                        <div className="flex items-center mb-2">
+                          <Crown className="h-4 w-4 text-amber-600 mr-2" />
+                          <span className="text-sm font-semibold text-amber-800">How to Get GOLD Membership?</span>
+                        </div>
+                        <p className="text-amber-800 text-sm">
+                          Contact our support team to upgrade to GOLD membership for just ₹19 INR and receive your private key instantly!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : materials?.dpp_materials && materials.dpp_materials.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
+                      <div className="flex items-center">
+                        <Crown className="h-5 w-5 text-amber-600 mr-2" />
+                        <span className="text-sm font-semibold text-green-800">GOLD Membership Active! DPP Access Unlocked</span>
+                      </div>
+                    </div>
+                    
+                    {materials.dpp_materials.map((dpp, index) => (
+                      <div
+                        key={index}
+                        className="group bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                        onClick={() => handleDPPClick(dpp.link)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-700 transition-colors">
+                              <BookOpen className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-900 transition-colors">
+                                {dpp.title}
+                              </h4>
+                              <p className="text-sm text-gray-600">Click to access practice problems</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center text-blue-600 group-hover:text-blue-700 transition-colors">
+                            <ExternalLink className="h-5 w-5" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <p>DPP materials not available for this subject.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -347,6 +637,92 @@ export function StudyMaterialsModal({
                 <Trophy className="h-4 w-4 mr-2" />
                 Complete Subject!
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GOLD Private Key Dialog - Higher z-index to appear on top */}
+      {showGoldKeyDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[70]">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
+            <div className="text-center mb-6">
+              <div className="bg-gradient-to-r from-amber-500 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Lock className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
+                Enter Private Key & Verify
+              </h3>
+              <p className="text-gray-600 text-sm">
+                Enter your GOLD membership private key to access Daily Practice Problems
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="goldKeyInput" className="block text-sm font-medium text-amber-700 mb-2">
+                  Private Key
+                </label>
+                <input
+                  id="goldKeyInput"
+                  type="text"
+                  value={goldKey}
+                  onChange={(e) => setGoldKey(e.target.value)}
+                  className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50 placeholder-amber-400"
+                  placeholder="Enter your private key"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !validatingKey && goldKey.trim()) {
+                      handleGoldKeySubmit()
+                    }
+                  }}
+                  autoFocus
+                  disabled={validatingKey}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {goldKeyError && (
+                  <p className="text-red-600 text-sm mt-2 text-center font-medium">
+                    {goldKeyError}
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-center mb-2">
+                  <Crown className="h-4 w-4 text-amber-600 mr-2" />
+                  <span className="text-sm font-semibold text-amber-800">GOLD Membership Required</span>
+                </div>
+                <p className="text-amber-800 text-sm">
+                  Your private key is provided after upgrading to GOLD membership (₹19 INR). Contact support to upgrade and receive your key!
+                </p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleKeyDialogClose}
+                  disabled={validatingKey}
+                  className="flex-1 px-4 py-3 border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-colors font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleGoldKeySubmit}
+                  disabled={validatingKey || !goldKey.trim()}
+                  className="flex-1 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white px-4 py-3 rounded-lg hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 transition-all duration-200 font-medium flex items-center justify-center shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {validatingKey ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="h-4 w-4 mr-2" />
+                      Verify & Continue
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

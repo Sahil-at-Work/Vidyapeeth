@@ -5,6 +5,7 @@ import { Subject, SubjectMaterial } from '../../types'
 import { useGameification } from '../../hooks/useGameification'
 import { useSubjectMaterials } from '../../hooks/useSubjectMaterials'
 import { useAuth } from '../../hooks/useAuth'
+import { useUserProfile } from '../../hooks/useUserProfile'
 import { SubjectCard } from './SubjectCard'
 import { StudyMaterialsModal } from './StudyMaterialsModal'
 import { LeaderboardWidget } from './LeaderboardWidget'
@@ -16,6 +17,7 @@ interface SubjectsListProps {
 
 export function SubjectsList({ semesterId }: SubjectsListProps) {
   const { user } = useAuth()
+  const { profile } = useUserProfile(user?.id)
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
@@ -184,14 +186,17 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
         </div>
       </div>
 
-      {/* Study Materials Modal */}
-      <StudyMaterialsModal
-        isOpen={showMaterialsModal}
-        onClose={() => setShowMaterialsModal(false)}
-        subject={selectedSubject!}
-        materials={selectedMaterials}
-        onUpdateProgress={handleUpdateProgress}
-      />
+      {/* Study Materials Modal - Only render when we have a valid subject */}
+      {showMaterialsModal && selectedSubject && (
+        <StudyMaterialsModal
+          isOpen={showMaterialsModal}
+          onClose={() => setShowMaterialsModal(false)}
+          subject={selectedSubject}
+          materials={selectedMaterials}
+          profile={profile}
+          onUpdateProgress={handleUpdateProgress}
+        />
+      )}
 
       {/* Subject Completion Confirmation Dialog */}
       {showCompletionDialog && (

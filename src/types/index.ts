@@ -59,12 +59,18 @@ export interface Subscription {
   updated_at: string
 }
 
+export interface DPPMaterial {
+  title: string
+  link: string
+}
+
 export interface SubjectMaterial {
   id: string
   subject_id: string
   syllabus: string | null
   drive_link: string | null
   gate_questions: GateQuestion[]
+  dpp_materials: DPPMaterial[]
   created_at: string
   updated_at: string
 }
