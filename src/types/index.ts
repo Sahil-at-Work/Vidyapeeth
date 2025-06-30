@@ -64,13 +64,18 @@ export interface DPPMaterial {
   link: string
 }
 
+export interface DPPChapter {
+  chapter: string
+  dpps: DPPMaterial[]
+}
+
 export interface SubjectMaterial {
   id: string
   subject_id: string
   syllabus: string | null
   drive_link: string | null
   gate_questions: GateQuestion[]
-  dpp_materials: DPPMaterial[]
+  dpp_materials: DPPChapter[]
   created_at: string
   updated_at: string
 }
