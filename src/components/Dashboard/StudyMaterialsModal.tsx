@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock } from 'lucide-react'
-import { Subject, SubjectMaterial, GateQuestion, UserProfile } from '../../types'
+import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp } from 'lucide-react'
+import { Subject, SubjectMaterial, GateQuestion, UserProfile, DPPChapter } from '../../types'
 import { supabase } from '../../lib/supabase'
 
 interface StudyMaterialsModalProps {
@@ -32,6 +32,7 @@ export function StudyMaterialsModal({
   const [goldKeyError, setGoldKeyError] = useState('')
   const [hasGoldAccess, setHasGoldAccess] = useState(false)
   const [validatingKey, setValidatingKey] = useState(false)
+  const [expandedChapters, setExpandedChapters] = useState<{ [key: number]: boolean }>({})
 
   // Auto-dismiss error message after 2 seconds
   React.useEffect(() => {
@@ -136,6 +137,13 @@ export function StudyMaterialsModal({
     setGoldKey('')
     setGoldKeyError('')
     setValidatingKey(false)
+  }
+
+  const toggleChapter = (chapterIndex: number) => {
+    setExpandedChapters(prev => ({
+      ...prev,
+      [chapterIndex]: !prev[chapterIndex]
+    }))
   }
 
   // Check if personal profile is completed (Name, Phone, DOB, Location, Bio)
@@ -249,7 +257,7 @@ export function StudyMaterialsModal({
                 }`}
               >
                 <BookOpen className="h-4 w-4 inline mr-2" />
-                DPP Materials ({materials?.dpp_materials?.length || 0})
+                DPP Materials ({materials?.dpp_materials?.reduce((total, chapter) => total + chapter.dpps.length, 0) || 0})
                 {!isProfileCompleted && (
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
                 )}
@@ -558,28 +566,60 @@ export function StudyMaterialsModal({
                       </div>
                     </div>
                     
-                    {materials.dpp_materials.map((dpp, index) => (
-                      <div
-                        key={index}
-                        className="group bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
-                        onClick={() => handleDPPClick(dpp.link)}
-                      >
-                        <div className="flex items-center justify-between">
+                    {materials.dpp_materials.map((chapter, chapterIndex) => (
+                      <div key={chapterIndex} className="border border-gray-200 rounded-lg overflow-hidden">
+                        {/* Chapter Header */}
+                        <button
+                          onClick={() => toggleChapter(chapterIndex)}
+                          className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-4 flex items-center justify-between hover:from-blue-100 hover:to-indigo-100 transition-all duration-200"
+                        >
                           <div className="flex items-center">
-                            <div className="bg-blue-600 w-10 h-10 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-700 transition-colors">
-                              <BookOpen className="h-5 w-5 text-white" />
+                            <div className="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3">
+                              <BookOpen className="h-4 w-4 text-white" />
                             </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900 group-hover:text-blue-900 transition-colors">
-                                {dpp.title}
-                              </h4>
-                              <p className="text-sm text-gray-600">Click to access practice problems</p>
+                            <div className="text-left">
+                              <h4 className="font-semibold text-gray-900">{chapter.chapter}</h4>
+                              <p className="text-sm text-gray-600">{chapter.dpps.length} DPP{chapter.dpps.length !== 1 ? 's' : ''} available</p>
                             </div>
                           </div>
-                          <div className="flex items-center text-blue-600 group-hover:text-blue-700 transition-colors">
-                            <ExternalLink className="h-5 w-5" />
+                          <div className="flex items-center text-blue-600">
+                            {expandedChapters[chapterIndex] ? (
+                              <ChevronUp className="h-5 w-5" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5" />
+                            )}
                           </div>
-                        </div>
+                        </button>
+
+                        {/* Chapter DPPs */}
+                        {expandedChapters[chapterIndex] && (
+                          <div className="p-4 space-y-3 bg-white">
+                            {chapter.dpps.map((dpp, dppIndex) => (
+                              <div
+                                key={dppIndex}
+                                className="group bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg p-3 hover:shadow-md transition-all duration-200 cursor-pointer hover:from-blue-50 hover:to-indigo-50"
+                                onClick={() => handleDPPClick(dpp.link)}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <div className="bg-indigo-600 w-6 h-6 rounded flex items-center justify-center mr-3 group-hover:bg-indigo-700 transition-colors">
+                                      <span className="text-white text-xs font-bold">{dppIndex + 1}</span>
+                                    </div>
+                                    <div>
+                                      <h5 className="font-medium text-gray-900 group-hover:text-indigo-900 transition-colors">
+                                        {dpp.title}
+                                      </h5>
+                                      <p className="text-xs text-gray-600">Click to access practice problems</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center text-indigo-600 group-hover:text-indigo-700 transition-colors">
+                                    <ExternalLink className="h-4 w-4" />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -644,7 +684,7 @@ export function StudyMaterialsModal({
 
       {/* GOLD Private Key Dialog - Higher z-index to appear on top */}
       {showGoldKeyDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[70]">
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[80]">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8">
             <div className="text-center mb-6">
               <div className="bg-gradient-to-r from-amber-500 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
