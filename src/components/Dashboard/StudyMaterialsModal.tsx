@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Subject, SubjectMaterial, GateQuestion, UserProfile, DPPChapter } from '../../types'
 import { supabase } from '../../lib/supabase'
 
@@ -33,6 +33,76 @@ export function StudyMaterialsModal({
   const [hasGoldAccess, setHasGoldAccess] = useState(false)
   const [validatingKey, setValidatingKey] = useState(false)
   const [expandedChapters, setExpandedChapters] = useState<{ [key: number]: boolean }>({})
+  const [showGoldKey, setShowGoldKey] = useState(false)
+  const [selectedTopic, setSelectedTopic] = useState<number | null>(null)
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  // Sample related posts data
+  const relatedPosts = [
+    {
+      title: "Cell Biology Fundamentals",
+      description: "Explore the basic unit of life",
+      slides: [
+        {
+          title: "Cell Structure",
+          image: "https://images.pexels.com/photos/3938023/pexels-photo-3938023.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "Understanding cellular components and organelles"
+        },
+        {
+          title: "Cell Division",
+          image: "https://images.pexels.com/photos/5726794/pexels-photo-5726794.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "Mitosis and meiosis processes explained"
+        },
+        {
+          title: "Cell Functions",
+          image: "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "How cells perform essential life processes"
+        }
+      ]
+    },
+    {
+      title: "Plant Physiology",
+      description: "How plants function and survive",
+      slides: [
+        {
+          title: "Photosynthesis",
+          image: "https://images.pexels.com/photos/1072179/pexels-photo-1072179.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "The process of converting light into energy"
+        },
+        {
+          title: "Plant Transport",
+          image: "https://images.pexels.com/photos/1108572/pexels-photo-1108572.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "How water and nutrients move through plants"
+        },
+        {
+          title: "Plant Growth",
+          image: "https://images.pexels.com/photos/1072824/pexels-photo-1072824.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "Factors affecting plant development"
+        }
+      ]
+    },
+    {
+      title: "Human Anatomy",
+      description: "Structure of the human body",
+      slides: [
+        {
+          title: "Skeletal System",
+          image: "https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "Bones, joints, and their functions"
+        },
+        {
+          title: "Muscular System",
+          image: "https://images.pexels.com/photos/4144923/pexels-photo-4144923.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "Muscles and movement mechanisms"
+        },
+        {
+          title: "Nervous System",
+          image: "https://images.pexels.com/photos/8386434/pexels-photo-8386434.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
+          description: "Brain, nerves, and neural pathways"
+        }
+      ]
+    }
+  ]
 
   // Auto-dismiss error message after 2 seconds
   React.useEffect(() => {
@@ -139,6 +209,26 @@ export function StudyMaterialsModal({
     setValidatingKey(false)
   }
 
+  const handleTopicClick = (topicIndex: number) => {
+    setSelectedTopic(topicIndex)
+    setCurrentSlide(0)
+  }
+
+  const handleSlideNavigation = (direction: 'prev' | 'next') => {
+    if (selectedTopic === null) return
+    
+    const totalSlides = relatedPosts[selectedTopic].slides.length
+    if (direction === 'prev') {
+      setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
+    } else {
+      setCurrentSlide((prev) => (prev + 1) % totalSlides)
+    }
+  }
+
+  const handleVaidnyanikClick = () => {
+    window.open('https://sadguru-post.vercel.app', '_blank', 'noopener,noreferrer')
+  }
+
   const toggleChapter = (chapterIndex: number) => {
     setExpandedChapters(prev => ({
       ...prev,
@@ -214,52 +304,52 @@ export function StudyMaterialsModal({
 
           {/* Tabs */}
           <div className="border-b border-gray-200">
-            <div className="flex">
+            <div className="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               <button
                 onClick={() => setActiveTab('syllabus')}
-                className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+                className={`px-4 sm:px-6 py-3 font-medium text-xs sm:text-sm border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'syllabus'
                     ? 'border-indigo-500 text-indigo-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <FileText className="h-4 w-4 inline mr-2" />
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 Syllabus
               </button>
               <button
                 onClick={() => setActiveTab('materials')}
-                className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+                className={`px-4 sm:px-6 py-3 font-medium text-xs sm:text-sm border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'materials'
                     ? 'border-indigo-500 text-indigo-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <ExternalLink className="h-4 w-4 inline mr-2" />
+                <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 Study Materials
               </button>
               <button
                 onClick={() => setActiveTab('questions')}
-                className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${
+                className={`px-4 sm:px-6 py-3 font-medium text-xs sm:text-sm border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === 'questions'
                     ? 'border-indigo-500 text-indigo-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Brain className="h-4 w-4 inline mr-2" />
+                <Brain className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 GATE Questions ({materials?.gate_questions?.length || 0})
               </button>
               <button
                 onClick={() => setActiveTab('dpp')}
-                className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors relative ${
+                className={`px-4 sm:px-6 py-3 font-medium text-xs sm:text-sm border-b-2 transition-colors whitespace-nowrap flex-shrink-0 relative ${
                   activeTab === 'dpp'
                     ? 'border-indigo-500 text-indigo-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <BookOpen className="h-4 w-4 inline mr-2" />
+                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
                 DPP Materials ({materials?.dpp_materials?.reduce((total, chapter) => total + chapter.dpps.length, 0) || 0})
                 {!isProfileCompleted && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full"></div>
                 )}
               </button>
             </div>
@@ -281,6 +371,8 @@ export function StudyMaterialsModal({
             {activeTab === 'materials' && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Study Materials</h3>
+                
+                {/* Google Drive Resources */}
                 {materials?.drive_link ? (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
                     <div className="flex items-center justify-between">
@@ -308,6 +400,141 @@ export function StudyMaterialsModal({
                     <p>Study materials not available for this subject.</p>
                   </div>
                 )}
+
+                {/* Related Posts Section */}
+                <div className="mt-8">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Related Posts</h4>
+                  
+                  {selectedTopic === null ? (
+                    /* Topic Selection View */
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {relatedPosts.map((topic, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleTopicClick(index)}
+                            className="group bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all duration-300 transform hover:-translate-y-1"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <h5 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                {topic.title}
+                              </h5>
+                              <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                            </div>
+                            <p className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors">
+                              {topic.description}
+                            </p>
+                            <div className="mt-3 flex items-center text-xs text-indigo-600 font-medium">
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              {topic.slides.length} slides available
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Vaidnyanik Button */}
+                      <div className="flex justify-center mt-6">
+                        <button
+                          onClick={handleVaidnyanikClick}
+                          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold text-lg hover:from-violet-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center"
+                        >
+                          <Sparkles className="h-5 w-5 mr-2" />
+                          Vaidnyanik
+                          <ExternalLink className="h-4 w-4 ml-2" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Slide View */
+                    <div className="space-y-4">
+                      {/* Back Button */}
+                      <button
+                        onClick={() => setSelectedTopic(null)}
+                        className="flex items-center text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Topics
+                      </button>
+                      
+                      {/* Current Topic Title */}
+                      <div className="text-center mb-6">
+                        <h5 className="text-xl font-bold text-gray-900 mb-2">
+                          {relatedPosts[selectedTopic].title}
+                        </h5>
+                        <p className="text-gray-600">
+                          {relatedPosts[selectedTopic].description}
+                        </p>
+                      </div>
+                      
+                      {/* Slide Display */}
+                      <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div className="relative">
+                          <img
+                            src={relatedPosts[selectedTopic].slides[currentSlide].image}
+                            alt={relatedPosts[selectedTopic].slides[currentSlide].title}
+                            className="w-full h-64 object-cover"
+                          />
+                          
+                          {/* Navigation Arrows */}
+                          <button
+                            onClick={() => handleSlideNavigation('prev')}
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleSlideNavigation('next')}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                          </button>
+                          
+                          {/* Slide Counter */}
+                          <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                            {currentSlide + 1} / {relatedPosts[selectedTopic].slides.length}
+                          </div>
+                        </div>
+                        
+                        {/* Slide Content */}
+                        <div className="p-6">
+                          <h6 className="text-lg font-semibold text-gray-900 mb-2">
+                            {relatedPosts[selectedTopic].slides[currentSlide].title}
+                          </h6>
+                          <p className="text-gray-600">
+                            {relatedPosts[selectedTopic].slides[currentSlide].description}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Slide Indicators */}
+                      <div className="flex justify-center space-x-2 mt-4">
+                        {relatedPosts[selectedTopic].slides.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`w-3 h-3 rounded-full transition-all ${
+                              index === currentSlide
+                                ? 'bg-indigo-600'
+                                : 'bg-gray-300 hover:bg-gray-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Vaidnyanik Button in Slide View */}
+                      <div className="flex justify-center mt-6">
+                        <button
+                          onClick={handleVaidnyanikClick}
+                          className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:from-violet-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center"
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Vaidnyanik
+                          <ExternalLink className="h-3 w-3 ml-2" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -703,23 +930,37 @@ export function StudyMaterialsModal({
                 <label htmlFor="goldKeyInput" className="block text-sm font-medium text-amber-700 mb-2">
                   Private Key
                 </label>
-                <input
-                  id="goldKeyInput"
-                  type="text"
-                  value={goldKey}
-                  onChange={(e) => setGoldKey(e.target.value)}
-                  className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50 placeholder-amber-400"
-                  placeholder="Enter your private key"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !validatingKey && goldKey.trim()) {
-                      handleGoldKeySubmit()
-                    }
-                  }}
-                  autoFocus
-                  disabled={validatingKey}
-                  autoComplete="off"
-                  spellCheck={false}
-                />
+                <div className="relative">
+                  <input
+                    id="goldKeyInput"
+                    type={showGoldKey ? 'text' : 'password'}
+                    value={goldKey}
+                    onChange={(e) => setGoldKey(e.target.value)}
+                    className="w-full px-4 py-3 pr-12 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50 placeholder-amber-400"
+                    placeholder="Enter your private key"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !validatingKey && goldKey.trim()) {
+                        handleGoldKeySubmit()
+                      }
+                    }}
+                    autoFocus
+                    disabled={validatingKey}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowGoldKey(!showGoldKey)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-600 hover:text-amber-700 transition-colors p-1"
+                    disabled={validatingKey}
+                  >
+                    {showGoldKey ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 {goldKeyError && (
                   <p className="text-red-600 text-sm mt-2 text-center font-medium">
                     {goldKeyError}
