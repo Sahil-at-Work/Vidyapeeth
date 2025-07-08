@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, User, Phone, Calendar, MapPin, Edit3, Save, Camera, GraduationCap, Lock, Unlock, Crown, Star, Sparkles } from 'lucide-react'
+import { X, User, Phone, Calendar, MapPin, Edit3, Save, Camera, GraduationCap, Lock, Unlock, Crown, Star, Sparkles, Eye, EyeOff } from 'lucide-react'
 import { UserProfile, ProfileFormData, University, Department, Semester } from '../../types'
 import { useUserProfile } from '../../hooks/useUserProfile'
 import { useAuth } from '../../hooks/useAuth'
@@ -49,6 +49,7 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
   const [showAcademicUpdate, setShowAcademicUpdate] = useState(false)
   const [secretKey, setSecretKey] = useState('')
   const [secretKeyError, setSecretKeyError] = useState('')
+  const [showSecretKey, setShowSecretKey] = useState(false)
   
   // Academic data
   const [universities, setUniversities] = useState<University[]>([])
@@ -667,15 +668,28 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
 
             <div className="space-y-4">
               <div>
-                <input
-                  type="password"
-                  value={secretKey}
-                  onChange={(e) => setSecretKey(e.target.value)}
-                  className="w-full px-4 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50"
-                  placeholder="Enter your private key"
-                  onKeyPress={(e) => e.key === 'Enter' && handleSecretKeySubmit()}
-                  autoFocus
-                />
+                <div className="relative">
+                  <input
+                    type={showSecretKey ? 'text' : 'password'}
+                    value={secretKey}
+                    onChange={(e) => setSecretKey(e.target.value)}
+                    className="w-full px-4 py-3 pr-12 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50"
+                    placeholder="Enter your private key"
+                    onKeyPress={(e) => e.key === 'Enter' && handleSecretKeySubmit()}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSecretKey(!showSecretKey)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-600 hover:text-amber-700 transition-colors p-1"
+                  >
+                    {showSecretKey ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
                 {secretKeyError && (
                   <p className="text-red-600 text-sm mt-2 text-center font-medium">
                     {secretKeyError}
