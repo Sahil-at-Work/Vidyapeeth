@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react'
@@ -32,10 +32,89 @@ export function StudyMaterialsModal({
   const [goldKeyError, setGoldKeyError] = useState('')
   const [hasGoldAccess, setHasGoldAccess] = useState(false)
   const [validatingKey, setValidatingKey] = useState(false)
+  const [showGoldKeyPassword, setShowGoldKeyPassword] = useState(false)
   const [expandedChapters, setExpandedChapters] = useState<{ [key: number]: boolean }>({})
   const [showGoldKey, setShowGoldKey] = useState(false)
   const [selectedTopic, setSelectedTopic] = useState<number | null>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
+
+  // Private key storage utilities
+  const STORAGE_KEY = 'vidyapeeth_gold_key'
+  const STORAGE_EXPIRY_DAYS = 4
+
+  const savePrivateKeyToStorage = (key: string) => {
+    const expiryDate = new Date()
+    expiryDate.setDate(expiryDate.getDate() + STORAGE_EXPIRY_DAYS)
+    
+    const storageData = {
+      key: key,
+      expiry: expiryDate.getTime()
+    }
+    
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData))
+  }
+
+  const getPrivateKeyFromStorage = () => {
+    try {
+      const storedData = localStorage.getItem(STORAGE_KEY)
+      if (!storedData) return null
+      
+      const parsedData = JSON.parse(storedData)
+      const now = new Date().getTime()
+      
+      // Check if key has expired
+      if (now > parsedData.expiry) {
+        localStorage.removeItem(STORAGE_KEY)
+        return null
+      }
+      
+      return parsedData.key
+    } catch (error) {
+      console.error('Error reading private key from storage:', error)
+      localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
+  }
+
+  const clearPrivateKeyFromStorage = () => {
+    localStorage.removeItem(STORAGE_KEY)
+  }
+
+  // Check for stored private key on component mount
+  useEffect(() => {
+    const storedKey = getPrivateKeyFromStorage()
+    if (storedKey && profile?.id) {
+      // Validate the stored key
+      validateStoredKey(storedKey)
+    }
+  }, [profile?.id])
+
+  const validateStoredKey = async (storedKey: string) => {
+    if (!profile?.id) return
+    
+    try {
+      const { data, error } = await supabase.rpc('validate_user_private_key', {
+        p_user_id: profile.id,
+        p_key: storedKey
+      })
+
+      if (error) {
+        console.error('Error validating stored key:', error)
+        clearPrivateKeyFromStorage()
+        return
+      }
+
+      if (data === true) {
+        setHasGoldAccess(true)
+      } else {
+        // Key is invalid, remove from storage
+        clearPrivateKeyFromStorage()
+      }
+    } catch (error) {
+      console.error('Exception validating stored key:', error)
+      clearPrivateKeyFromStorage()
+    }
+  }
 
   // Sample related posts data
   const relatedPosts = [
@@ -189,6 +268,10 @@ export function StudyMaterialsModal({
         setHasGoldAccess(true)
         setShowGoldKeyDialog(false)
         setGoldKeyError('')
+        
+        // Save the key to local storage for 4 days
+        savePrivateKeyToStorage(goldKey.trim())
+        
         setGoldKey('')
       } else {
         setGoldKeyError('Invalid Private Key. Please check and try again.')
@@ -928,12 +1011,12 @@ export function StudyMaterialsModal({
             <div className="space-y-4">
               <div>
                 <label htmlFor="goldKeyInput" className="block text-sm font-medium text-amber-700 mb-2">
-                  Private Key
+                  Private Key (will be saved for 4 days)
                 </label>
                 <div className="relative">
                   <input
                     id="goldKeyInput"
-                    type={showGoldKey ? 'text' : 'password'}
+                    type={showGoldKeyPassword ? 'text' : 'password'}
                     value={goldKey}
                     onChange={(e) => setGoldKey(e.target.value)}
                     className="w-full px-4 py-3 pr-12 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-center text-lg tracking-wider bg-gradient-to-r from-amber-50 to-orange-50 placeholder-amber-400"
@@ -950,11 +1033,11 @@ export function StudyMaterialsModal({
                   />
                   <button
                     type="button"
-                    onClick={() => setShowGoldKey(!showGoldKey)}
+                    onClick={() => setShowGoldKeyPassword(!showGoldKeyPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-amber-600 hover:text-amber-700 transition-colors p-1"
                     disabled={validatingKey}
                   >
-                    {showGoldKey ? (
+                    {showGoldKeyPassword ? (
                       <EyeOff className="h-5 w-5" />
                     ) : (
                       <Eye className="h-5 w-5" />
@@ -971,10 +1054,13 @@ export function StudyMaterialsModal({
               <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200 rounded-lg p-4">
                 <div className="flex items-center mb-2">
                   <Crown className="h-4 w-4 text-amber-600 mr-2" />
-                  <span className="text-sm font-semibold text-amber-800">GOLD Membership Required</span>
+                  <span className="text-sm font-semibold text-amber-800">GOLD Membership Benefits</span>
                 </div>
-                <p className="text-amber-800 text-sm">
-                  Your private key is provided after upgrading to GOLD membership (₹19 INR). Contact support to upgrade and receive your key!
+                <p className="text-amber-800 text-sm mb-2">
+                  Your private key will be securely saved in your browser for 4 days after successful verification.
+                </p>
+                <p className="text-amber-700 text-xs">
+                  Contact support to upgrade to GOLD membership (₹19 INR) and receive your private key!
                 </p>
               </div>
 
