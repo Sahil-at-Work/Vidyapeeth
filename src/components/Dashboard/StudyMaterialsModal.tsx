@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react'
+import { EnhancedSyllabusDisplay } from './EnhancedSyllabusDisplay'
 import { Subject, SubjectMaterial, GateQuestion, UserProfile, DPPChapter } from '../../types'
 import { supabase } from '../../lib/supabase'
 
@@ -441,13 +442,11 @@ export function StudyMaterialsModal({
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[60vh]">
             {activeTab === 'syllabus' && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Syllabus</h3>
-                <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-h1:text-2xl prose-h1:font-bold prose-h1:mb-4 prose-h2:text-xl prose-h2:font-semibold prose-h2:mb-3 prose-h2:text-indigo-600 prose-h3:text-lg prose-h3:font-medium prose-h3:mb-2 prose-h3:text-gray-800 prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono prose-blockquote:border-l-4 prose-blockquote:border-indigo-500 prose-blockquote:bg-indigo-50 prose-blockquote:pl-4 prose-blockquote:py-2 prose-blockquote:italic prose-ul:list-disc prose-ol:list-decimal prose-li:mb-1 prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-th:font-semibold prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {materials?.syllabus || 'Syllabus not available for this subject.'}
-                  </ReactMarkdown>
-                </div>
+              <div className="space-y-6">
+                <EnhancedSyllabusDisplay
+                  syllabusData={materials?.syllabus_json ? JSON.parse(JSON.stringify(materials.syllabus_json)) : null}
+                  fallbackContent={materials?.syllabus}
+                />
               </div>
             )}
 

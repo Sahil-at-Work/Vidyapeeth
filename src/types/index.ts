@@ -73,6 +73,7 @@ export interface SubjectMaterial {
   id: string
   subject_id: string
   syllabus: string | null
+  syllabus_json: any | null
   drive_link: string | null
   gate_questions: GateQuestion[]
   dpp_materials: DPPChapter[]
