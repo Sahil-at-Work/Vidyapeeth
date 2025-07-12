@@ -69,6 +69,37 @@ export interface DPPChapter {
   dpps: DPPMaterial[]
 }
 
+export interface RelatedPostSlide {
+  title: string
+  image: string
+  description: string
+  key_points: string[]
+}
+
+export interface RelatedPost {
+  title: string
+  description: string
+  category: string
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+  estimated_time: string
+  slides: RelatedPostSlide[]
+}
+
+export interface VideoTopic {
+  title: string
+  description: string
+  thumbnail: string
+  video_url: string
+  duration: string
+  difficulty: 'beginner' | 'intermediate' | 'advanced'
+}
+
+export interface VideoChapter {
+  chapter: string
+  description: string
+  topics: VideoTopic[]
+}
+
 export interface SubjectMaterial {
   id: string
   subject_id: string
@@ -77,6 +108,8 @@ export interface SubjectMaterial {
   drive_link: string | null
   gate_questions: GateQuestion[]
   dpp_materials: DPPChapter[]
+  related_posts: RelatedPost[]
+  video_resources: VideoChapter[]
   created_at: string
   updated_at: string
 }

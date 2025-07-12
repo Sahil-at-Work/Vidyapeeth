@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp, Eye, EyeOff, ArrowLeft, ArrowRight } from 'lucide-react'
+import { X, FileText, ExternalLink, Brain, ChevronRight, CheckCircle, Trophy, Sparkles, BookOpen, Lock, Settings, Crown, Star, Unlock, ChevronDown, ChevronUp, Eye, EyeOff, ArrowLeft, ArrowRight, Clock } from 'lucide-react'
 import { EnhancedSyllabusDisplay } from './EnhancedSyllabusDisplay'
-import { Subject, SubjectMaterial, GateQuestion, UserProfile, DPPChapter } from '../../types'
+import { Subject, SubjectMaterial, GateQuestion, UserProfile, DPPChapter, RelatedPost, VideoChapter, VideoTopic } from '../../types'
 import { supabase } from '../../lib/supabase'
 
 interface StudyMaterialsModalProps {
@@ -116,73 +116,9 @@ export function StudyMaterialsModal({
       clearPrivateKeyFromStorage()
     }
   }
-
-  // Sample related posts data
-  const relatedPosts = [
-    {
-      title: "Cell Biology Fundamentals",
-      description: "Explore the basic unit of life",
-      slides: [
-        {
-          title: "Cell Structure",
-          image: "https://images.pexels.com/photos/3938023/pexels-photo-3938023.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "Understanding cellular components and organelles"
-        },
-        {
-          title: "Cell Division",
-          image: "https://images.pexels.com/photos/5726794/pexels-photo-5726794.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "Mitosis and meiosis processes explained"
-        },
-        {
-          title: "Cell Functions",
-          image: "https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "How cells perform essential life processes"
-        }
-      ]
-    },
-    {
-      title: "Plant Physiology",
-      description: "How plants function and survive",
-      slides: [
-        {
-          title: "Photosynthesis",
-          image: "https://images.pexels.com/photos/1072179/pexels-photo-1072179.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "The process of converting light into energy"
-        },
-        {
-          title: "Plant Transport",
-          image: "https://images.pexels.com/photos/1108572/pexels-photo-1108572.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "How water and nutrients move through plants"
-        },
-        {
-          title: "Plant Growth",
-          image: "https://images.pexels.com/photos/1072824/pexels-photo-1072824.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "Factors affecting plant development"
-        }
-      ]
-    },
-    {
-      title: "Human Anatomy",
-      description: "Structure of the human body",
-      slides: [
-        {
-          title: "Skeletal System",
-          image: "https://images.pexels.com/photos/7176319/pexels-photo-7176319.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "Bones, joints, and their functions"
-        },
-        {
-          title: "Muscular System",
-          image: "https://images.pexels.com/photos/4144923/pexels-photo-4144923.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "Muscles and movement mechanisms"
-        },
-        {
-          title: "Nervous System",
-          image: "https://images.pexels.com/photos/8386434/pexels-photo-8386434.jpeg?auto=compress&cs=tinysrgb&w=400&h=250&fit=crop",
-          description: "Brain, nerves, and neural pathways"
-        }
-      ]
-    }
-  ]
+  const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([])
+  const [videoResources, setVideoResources] = useState<VideoChapter[]>([])
+  const [expandedVideoChapters, setExpandedVideoChapters] = useState<Set<number>>(new Set())
 
   // Auto-dismiss error message after 2 seconds
   React.useEffect(() => {
@@ -311,6 +247,56 @@ export function StudyMaterialsModal({
 
   const handleVaidnyanikClick = () => {
     window.open('https://sadguru-post.vercel.app', '_blank', 'noopener,noreferrer')
+  }
+
+  // Load related posts from materials
+  useEffect(() => {
+    if (materials?.related_posts) {
+      setRelatedPosts(materials.related_posts)
+    }
+    if (materials?.video_resources) {
+      setVideoResources(materials.video_resources)
+    }
+  }, [materials])
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'bg-green-100 text-green-800'
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'advanced':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const toggleVideoChapter = (chapterIndex: number) => {
+    const newExpanded = new Set(expandedVideoChapters)
+    if (newExpanded.has(chapterIndex)) {
+      newExpanded.delete(chapterIndex)
+    } else {
+      newExpanded.add(chapterIndex)
+    }
+    setExpandedVideoChapters(newExpanded)
+  }
+
+  const handleVideoClick = (videoUrl: string) => {
+    window.open(videoUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const getDifficultyGradient = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner':
+        return 'from-green-400 to-emerald-500'
+      case 'intermediate':
+        return 'from-yellow-400 to-orange-500'
+      case 'advanced':
+        return 'from-red-400 to-pink-500'
+      default:
+        return 'from-gray-400 to-gray-500'
+    }
   }
 
   const toggleChapter = (chapterIndex: number) => {
@@ -483,11 +469,139 @@ export function StudyMaterialsModal({
                   </div>
                 )}
 
+                {/* Related Videos Section */}
+                <div className="mt-8">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <div className="bg-gradient-to-r from-red-500 to-pink-500 w-6 h-6 rounded-lg flex items-center justify-center mr-3">
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM5 8a1 1 0 011-1h1a1 1 0 010 2H6a1 1 0 01-1-1zm6 1a1 1 0 100 2h3a1 1 0 100-2H11z" />
+                      </svg>
+                    </div>
+                    Related Videos
+                  </h4>
+                  
+                  {videoResources.length === 0 ? (
+                    <div className="text-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                      <div className="bg-gray-200 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM5 8a1 1 0 011-1h1a1 1 0 010 2H6a1 1 0 01-1-1zm6 1a1 1 0 100 2h3a1 1 0 100-2H11z" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-600">No video resources available for this subject.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {videoResources.map((chapter, chapterIndex) => (
+                        <div key={chapterIndex} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
+                          {/* Chapter Header */}
+                          <button
+                            onClick={() => toggleVideoChapter(chapterIndex)}
+                            className="w-full px-6 py-4 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all duration-200 flex items-center justify-between text-left border-b border-gray-100"
+                          >
+                            <div className="flex items-center">
+                              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 w-10 h-10 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                                <span className="text-white font-bold text-sm">{chapterIndex + 1}</span>
+                              </div>
+                              <div>
+                                <h5 className="text-lg font-bold text-gray-900 mb-1">{chapter.chapter}</h5>
+                                <p className="text-sm text-gray-600">{chapter.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-3">
+                              <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                                {chapter.topics.length} videos
+                              </div>
+                              {expandedVideoChapters.has(chapterIndex) ? (
+                                <ChevronUp className="h-5 w-5 text-gray-500" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5 text-gray-500" />
+                              )}
+                            </div>
+                          </button>
+
+                          {/* Chapter Content */}
+                          {expandedVideoChapters.has(chapterIndex) && (
+                            <div className="p-6 bg-gradient-to-br from-gray-50 to-white">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {chapter.topics.map((video, videoIndex) => (
+                                  <div
+                                    key={videoIndex}
+                                    onClick={() => handleVideoClick(video.video_url)}
+                                    className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 border border-gray-100 overflow-hidden"
+                                    style={{
+                                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.boxShadow = `0 20px 25px -5px rgba(99, 102, 241, 0.3), 0 10px 10px -5px rgba(99, 102, 241, 0.1)`
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                                    }}
+                                  >
+                                    {/* Video Thumbnail */}
+                                    <div className="relative overflow-hidden">
+                                      <img
+                                        src={video.thumbnail}
+                                        alt={video.title}
+                                        className="w-full h-40 object-cover group-hover:scale-110 transition-transform duration-300"
+                                      />
+                                      
+                                      {/* Play Button Overlay */}
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                                        <div className="bg-red-600 w-12 h-12 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg">
+                                          <svg className="w-5 h-5 text-white ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                          </svg>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Duration Badge */}
+                                      <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs font-medium">
+                                        {video.duration}
+                                      </div>
+                                    </div>
+
+                                    {/* Video Info */}
+                                    <div className="p-4">
+                                      <h6 className="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors leading-tight">
+                                        {video.title}
+                                      </h6>
+                                      <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
+                                        {video.description}
+                                      </p>
+                                      
+                                      {/* Video Metadata */}
+                                      <div className="flex items-center justify-between">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${getDifficultyGradient(video.difficulty)} shadow-sm`}>
+                                          {video.difficulty}
+                                        </span>
+                                        <div className="flex items-center text-xs text-gray-500">
+                                          <Clock className="h-3 w-3 mr-1" />
+                                          {video.duration}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Related Posts Section */}
                 <div className="mt-8">
                   <h4 className="text-lg font-semibold text-gray-900 mb-4">Related Posts</h4>
                   
-                  {selectedTopic === null ? (
+                  {relatedPosts.length === 0 ? (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl">
+                      <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No related posts available for this subject.</p>
+                    </div>
+                  ) : selectedTopic === null ? (
                     /* Topic Selection View */
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -495,20 +609,38 @@ export function StudyMaterialsModal({
                           <div
                             key={index}
                             onClick={() => handleTopicClick(index)}
-                            className="group bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all duration-300 transform hover:-translate-y-1"
+                            className="group bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 cursor-pointer hover:shadow-lg hover:border-indigo-300 transition-all duration-300 transform hover:-translate-y-1"
                           >
-                            <div className="flex items-center justify-between mb-3">
-                              <h5 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                            <div className="flex items-start justify-between mb-3">
+                              <h5 className="font-bold text-lg text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight">
                                 {topic.title}
                               </h5>
                               <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-indigo-500 transition-colors" />
                             </div>
-                            <p className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors">
+                            <p className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors mb-4 leading-relaxed">
                               {topic.description}
                             </p>
-                            <div className="mt-3 flex items-center text-xs text-indigo-600 font-medium">
-                              <Sparkles className="h-3 w-3 mr-1" />
-                              {topic.slides.length} slides available
+                            
+                            {/* Category and Difficulty Badges */}
+                            <div className="flex items-center justify-between mb-3">
+                              <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-medium">
+                                {topic.category}
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(topic.difficulty)}`}>
+                                {topic.difficulty}
+                              </span>
+                            </div>
+                            
+                            {/* Stats */}
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <div className="flex items-center">
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                {topic.slides.length} slides
+                              </div>
+                              <div className="flex items-center">
+                                <Clock className="h-3 w-3 mr-1" />
+                                {topic.estimated_time}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -543,18 +675,29 @@ export function StudyMaterialsModal({
                         <h5 className="text-xl font-bold text-gray-900 mb-2">
                           {relatedPosts[selectedTopic].title}
                         </h5>
-                        <p className="text-gray-600">
+                        <p className="text-gray-600 mb-3">
                           {relatedPosts[selectedTopic].description}
                         </p>
+                        <div className="flex items-center justify-center space-x-4">
+                          <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                            {relatedPosts[selectedTopic].category}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getDifficultyColor(relatedPosts[selectedTopic].difficulty)}`}>
+                            {relatedPosts[selectedTopic].difficulty}
+                          </span>
+                          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                            {relatedPosts[selectedTopic].estimated_time}
+                          </span>
+                        </div>
                       </div>
                       
                       {/* Slide Display */}
-                      <div className="relative bg-white rounded-xl shadow-lg overflow-hidden">
+                      <div className="relative bg-white rounded-xl shadow-lg overflow-hidden border">
                         <div className="relative">
                           <img
                             src={relatedPosts[selectedTopic].slides[currentSlide].image}
                             alt={relatedPosts[selectedTopic].slides[currentSlide].title}
-                            className="w-full h-64 object-cover"
+                            className="w-full h-80 object-cover"
                           />
                           
                           {/* Navigation Arrows */}
@@ -585,6 +728,21 @@ export function StudyMaterialsModal({
                           <p className="text-gray-600">
                             {relatedPosts[selectedTopic].slides[currentSlide].description}
                           </p>
+                          
+                          {/* Key Points */}
+                          {relatedPosts[selectedTopic].slides[currentSlide].key_points && (
+                            <div className="mt-4">
+                              <h6 className="text-sm font-semibold text-gray-700 mb-2">Key Points:</h6>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {relatedPosts[selectedTopic].slides[currentSlide].key_points.map((point, index) => (
+                                  <div key={index} className="flex items-center text-sm text-gray-600">
+                                    <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2 flex-shrink-0"></div>
+                                    {point}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
