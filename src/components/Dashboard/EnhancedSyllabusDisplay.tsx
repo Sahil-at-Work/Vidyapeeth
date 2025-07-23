@@ -1,6 +1,4 @@
 import React, { useState } from 'react'
-import { useAuth } from '../../hooks/useAuth'
-import { useSyllabusProgress } from '../../hooks/useSyllabusProgress'
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -66,12 +64,11 @@ interface EnhancedSyllabusDisplayProps {
   syllabusData: SyllabusData | null
   fallbackContent?: string
   subjectId?: string
+  completionStatus?: { [key: string]: boolean }
   onUpdateProgress?: (sectionIndex: number, topicIndex?: number, subtopicIndex?: number, completed?: boolean) => void
 }
 
-export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subjectId, onUpdateProgress }: EnhancedSyllabusDisplayProps) {
-  const { user } = useAuth()
-  const { progress, updateProgress, getCompletionStatus } = useSyllabusProgress(user?.id, subjectId)
+export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subjectId, completionStatus = {}, onUpdateProgress }: EnhancedSyllabusDisplayProps) {
   
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set())
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set())
@@ -100,18 +97,20 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subject
   }
 
   const handleSectionCompletion = (sectionIndex: number, completed: boolean) => {
-    updateProgress(sectionIndex, undefined, undefined, completed)
     onUpdateProgress?.(sectionIndex, undefined, undefined, completed)
   }
 
   const handleTopicCompletion = (sectionIndex: number, topicIndex: number, completed: boolean) => {
-    updateProgress(sectionIndex, topicIndex, undefined, completed)
     onUpdateProgress?.(sectionIndex, topicIndex, undefined, completed)
   }
 
   const handleSubtopicCompletion = (sectionIndex: number, topicIndex: number, subtopicIndex: number, completed: boolean) => {
-    updateProgress(sectionIndex, topicIndex, subtopicIndex, completed)
     onUpdateProgress?.(sectionIndex, topicIndex, subtopicIndex, completed)
+  }
+
+  const getCompletionStatus = (sectionIndex: number, topicIndex?: number, subtopicIndex?: number) => {
+    const key = `${sectionIndex}-${topicIndex || 'null'}-${subtopicIndex || 'null'}`
+    return completionStatus[key] || false
   }
 
   const getCompletionStats = () => {
