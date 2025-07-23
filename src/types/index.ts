@@ -191,3 +191,34 @@ export interface ProfileFormData {
   bio: string
   location: string
 }
+
+export interface PlacementRecord {
+  id: string
+  company_name: string
+  job_title: string
+  job_description: string
+  job_type: 'internship' | 'placement' | 'both'
+  posting_date: string
+  deadline: string
+  salary_range: string | null
+  location: string | null
+  requirements: string | null
+  application_link: string | null
+  contact_email: string | null
+  is_official: boolean
+  posted_by: string
+  views: number
+  applications_count: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface PlacementComment {
+  id: string
+  placement_id: string
+  user_id: string
+  content: string
+  created_at: string
+  updated_at: string
+}

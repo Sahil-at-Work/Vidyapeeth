@@ -101,9 +101,9 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
           subjects:subject_id (name, code),
           user_profiles:user_id (
             display_name,
-            universities:university_id (name),
-            departments:department_id (name),
-            semesters:semester_id (number)
+            universities(name),
+            departments(name),
+            semesters(number)
           )
         `)
 
@@ -165,9 +165,9 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
           *,
           user_profiles:user_id (
             display_name,
-            universities:university_id (name),
-            departments:department_id (name),
-            semesters:semester_id (number)
+            universities(name),
+            departments(name),
+            semesters(number)
           )
         `)
         .eq('doubt_id', doubtId)
@@ -386,7 +386,7 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
             <p className="text-gray-600">No doubts found. Be the first to ask a question!</p>
           </div>
         ) : (
-          <div className="space-y-4 max-h-[400px] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto">
             {filteredDoubts.map((doubt) => (
               <div
                 key={doubt.id}
@@ -396,33 +396,33 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-gray-900 group-hover:text-emerald-900 transition-colors line-clamp-1">
+                      <h4 className="font-semibold text-gray-900 group-hover:text-emerald-900 transition-colors line-clamp-1 text-sm">
                         {doubt.title}
                       </h4>
                       {doubt.is_resolved && (
                         <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                    <p className="text-gray-600 text-xs line-clamp-2 mb-3">
                       {doubt.description}
                     </p>
                   </div>
                 </div>
 
                 {/* Student Info */}
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                  <div className="flex items-center space-x-4">
+                <div className="text-xs text-gray-500 mb-3">
+                  <div className="grid grid-cols-2 gap-1">
                     <div className="flex items-center">
                       <User className="h-3 w-3 mr-1" />
-                      <span className="font-medium">{doubt.student_name}</span>
+                      <span className="font-medium truncate">{doubt.student_name}</span>
                     </div>
                     <div className="flex items-center">
                       <GraduationCap className="h-3 w-3 mr-1" />
-                      <span>{doubt.university_name}</span>
+                      <span className="truncate">{doubt.university_name}</span>
                     </div>
                     <div className="flex items-center">
                       <BookOpen className="h-3 w-3 mr-1" />
-                      <span>{doubt.department_name}</span>
+                      <span className="truncate">{doubt.department_name}</span>
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
@@ -433,16 +433,16 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
 
                 {/* Subject and Tags */}
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium">
+                  <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium truncate">
                     {doubt.subject_name}
                   </span>
-                  {doubt.tags.slice(0, 2).map((tag, index) => (
+                  {doubt.tags.slice(0, 1).map((tag, index) => (
                     <span key={index} className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
                       {tag}
                     </span>
                   ))}
-                  {doubt.tags.length > 2 && (
-                    <span className="text-gray-400 text-xs">+{doubt.tags.length - 2} more</span>
+                  {doubt.tags.length > 1 && (
+                    <span className="text-gray-400 text-xs">+{doubt.tags.length - 1}</span>
                   )}
                 </div>
 

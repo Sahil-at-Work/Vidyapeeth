@@ -11,6 +11,7 @@ import { StudyMaterialsModal } from './StudyMaterialsModal'
 import { LeaderboardWidget } from './LeaderboardWidget'
 import { NewsWidget } from './NewsWidget'
 import { DoubtsWidget } from './DoubtsWidget'
+import { CampusConnectWidget } from './CampusConnectWidget'
 
 interface SubjectsListProps {
   semesterId: string | null | undefined
@@ -131,63 +132,69 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Subjects Grid */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <BookOpen className="h-6 w-6 text-white mr-3" />
-                  <h3 className="text-lg font-semibold text-white">Your Subjects</h3>
-                </div>
-                <div className="text-white text-sm">
-                  {subjects.length} subjects • {subjects.reduce((sum, s) => sum + (s.credits || 0), 0)} total credits
+      <div className="space-y-8">
+        {/* Main Content Grid - Subjects with Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Subjects Section - Takes 2/3 width */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <BookOpen className="h-6 w-6 text-white mr-3" />
+                    <h3 className="text-lg font-semibold text-white">Your Subjects</h3>
+                  </div>
+                  <div className="text-white text-sm">
+                    {subjects.length} subjects • {subjects.reduce((sum, s) => sum + (s.credits || 0), 0)} total credits
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="p-6">
-              {subjects.length === 0 ? (
-                <div className="text-center py-8">
-                  <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No subjects found for this semester.</p>
-                </div>
-              ) : (
-                <div className="grid gap-6">
-                  {subjects.map((subject) => {
-                    const progress = userProgress.find(p => p.subject_id === subject.id)
-                    const materials = subject.subject_materials?.[0]
+              <div className="p-6">
+                {subjects.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No subjects found for this semester.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {subjects.map((subject) => {
+                      const progress = userProgress.find(p => p.subject_id === subject.id)
+                      const materials = subject.subject_materials?.[0]
 
-                    return (
-                      <SubjectCard
-                        key={subject.id}
-                        subject={subject}
-                        progress={progress}
-                        materials={materials}
-                        onStartStudy={handleStartStudy}
-                        onViewMaterials={handleViewMaterials}
-                        onShowCompletionDialog={handleShowCompletionDialog}
-                      />
-                    )
-                  })}
-                </div>
-              )}
+                      return (
+                        <SubjectCard
+                          key={subject.id}
+                          subject={subject}
+                          progress={progress}
+                          materials={materials}
+                          onStartStudy={handleStartStudy}
+                          onViewMaterials={handleViewMaterials}
+                          onShowCompletionDialog={handleShowCompletionDialog}
+                        />
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
+          </div>
+
+          {/* Sidebar - Takes 1/3 width */}
+          <div className="space-y-6">
+            {/* Leaderboard */}
+            <LeaderboardWidget leaderboard={leaderboard} userTotalXP={totalXP} />
+            
+            {/* News Widget */}
+            <NewsWidget />
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Leaderboard */}
-          <LeaderboardWidget leaderboard={leaderboard} userTotalXP={totalXP} />
-          
-          {/* News Widget */}
-          <NewsWidget />
-          
-          {/* Doubts Widget */}
-          <DoubtsWidget subjects={subjects} />
-        </div>
+        {/* Campus Connect Section - Full width */}
+        <CampusConnectWidget />
+
+        {/* Doubts Widget - Full width */}
+        <DoubtsWidget subjects={subjects} />
       </div>
 
       {/* Study Materials Modal - Only render when we have a valid subject */}
