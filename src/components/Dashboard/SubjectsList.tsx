@@ -10,6 +10,7 @@ import { SubjectCard } from './SubjectCard'
 import { StudyMaterialsModal } from './StudyMaterialsModal'
 import { LeaderboardWidget } from './LeaderboardWidget'
 import { NewsWidget } from './NewsWidget'
+import { DoubtsWidget } from './DoubtsWidget'
 
 interface SubjectsListProps {
   semesterId: string | null | undefined
@@ -183,6 +184,9 @@ export function SubjectsList({ semesterId }: SubjectsListProps) {
           
           {/* News Widget */}
           <NewsWidget />
+          
+          {/* Doubts Widget */}
+          <DoubtsWidget subjects={subjects} />
         </div>
       </div>
 

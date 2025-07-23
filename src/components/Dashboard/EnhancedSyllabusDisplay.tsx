@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
+import { useSyllabusProgress } from '../../hooks/useSyllabusProgress'
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -17,7 +19,8 @@ import {
   BarChart3,
   Timer,
   Trophy,
-  Sparkles
+  Sparkles,
+  Check
 } from 'lucide-react'
 
 interface SyllabusSection {
@@ -62,9 +65,14 @@ interface SyllabusData {
 interface EnhancedSyllabusDisplayProps {
   syllabusData: SyllabusData | null
   fallbackContent?: string
+  subjectId?: string
+  onUpdateProgress?: (sectionIndex: number, topicIndex?: number, subtopicIndex?: number, completed?: boolean) => void
 }
 
-export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: EnhancedSyllabusDisplayProps) {
+export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subjectId, onUpdateProgress }: EnhancedSyllabusDisplayProps) {
+  const { user } = useAuth()
+  const { progress, updateProgress, getCompletionStatus } = useSyllabusProgress(user?.id, subjectId)
+  
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set())
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set())
   const [showAssessment, setShowAssessment] = useState(false)
@@ -91,6 +99,64 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: Enhan
     setExpandedTopics(newExpanded)
   }
 
+  const handleSectionCompletion = (sectionIndex: number, completed: boolean) => {
+    updateProgress(sectionIndex, undefined, undefined, completed)
+    onUpdateProgress?.(sectionIndex, undefined, undefined, completed)
+  }
+
+  const handleTopicCompletion = (sectionIndex: number, topicIndex: number, completed: boolean) => {
+    updateProgress(sectionIndex, topicIndex, undefined, completed)
+    onUpdateProgress?.(sectionIndex, topicIndex, undefined, completed)
+  }
+
+  const handleSubtopicCompletion = (sectionIndex: number, topicIndex: number, subtopicIndex: number, completed: boolean) => {
+    updateProgress(sectionIndex, topicIndex, subtopicIndex, completed)
+    onUpdateProgress?.(sectionIndex, topicIndex, subtopicIndex, completed)
+  }
+
+  const getCompletionStats = () => {
+    if (!sections || !sections.length) return { completed: 0, total: 0, percentage: 0 }
+    
+    let totalItems = 0
+    let completedItems = 0
+    
+    sections.forEach((section, sectionIndex) => {
+      section.topics.forEach((topic, topicIndex) => {
+        topic.subtopics.forEach((_, subtopicIndex) => {
+          totalItems++
+          if (getCompletionStatus(sectionIndex, topicIndex, subtopicIndex)) {
+            completedItems++
+          }
+        })
+      })
+    })
+    
+    return {
+      completed: completedItems,
+      total: totalItems,
+      percentage: totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0
+    }
+  }
+
+  // Check if all subtopics in a topic are completed
+  const isTopicFullyCompleted = (sectionIndex: number, topicIndex: number) => {
+    const topic = sections[sectionIndex]?.topics[topicIndex]
+    if (!topic || !topic.subtopics.length) return false
+    
+    return topic.subtopics.every((_, subtopicIndex) => 
+      getCompletionStatus(sectionIndex, topicIndex, subtopicIndex)
+    )
+  }
+
+  // Check if all topics in a section are completed
+  const isSectionFullyCompleted = (sectionIndex: number) => {
+    const section = sections[sectionIndex]
+    if (!section || !section.topics.length) return false
+    
+    return section.topics.every((_, topicIndex) => 
+      isTopicFullyCompleted(sectionIndex, topicIndex)
+    )
+  }
   const getImportanceIcon = (importance: string) => {
     switch (importance) {
       case 'high':
@@ -212,6 +278,15 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: Enhan
       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="flex items-center">
+            <div className="bg-green-100 w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Progress</p>
+              <p className="font-bold text-gray-900">{getCompletionStats().percentage}%</p>
+            </div>
+          </div>
+          <div className="flex items-center">
             <div className="bg-blue-100 w-10 h-10 rounded-lg flex items-center justify-center mr-3">
               <BarChart3 className="h-5 w-5 text-blue-600" />
             </div>
@@ -240,14 +315,21 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: Enhan
               </p>
             </div>
           </div>
-          <div className="flex items-center">
-            <div className="bg-orange-100 w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-              <Timer className="h-5 w-5 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Duration</p>
-              <p className="font-bold text-gray-900">{subject_info.total_duration}</p>
-            </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+            <span className="text-sm text-gray-600">
+              {getCompletionStats().completed} of {getCompletionStats().total} items completed
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <div 
+              className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-300"
+              style={{ width: `${getCompletionStats().percentage}%` }}
+            />
           </div>
         </div>
       </div>
@@ -377,15 +459,33 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: Enhan
                 className={`w-full px-6 py-5 bg-gradient-to-r ${getSectionGradient(sectionIndex)} hover:opacity-90 transition-all duration-200 flex items-center justify-between text-left`}
               >
                 <div className="flex items-center">
+                  <div className="mr-4">
+                    <input
+                      type="checkbox"
+                      checked={isSectionFullyCompleted(sectionIndex)}
+                      onChange={(e) => {
+                        e.stopPropagation()
+                        handleSectionCompletion(sectionIndex, e.target.checked)
+                      }}
+                      className="w-5 h-5 text-white bg-white/20 border-2 border-white/40 rounded focus:ring-2 focus:ring-white/50 focus:ring-offset-0"
+                    />
+                  </div>
                   <div className="bg-white/20 backdrop-blur-sm w-12 h-12 rounded-xl flex items-center justify-center mr-4 shadow-lg">
                     <span className="text-white font-bold text-lg">{section.section_number}</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-white mb-1">{section.title}</h3>
+                    <h3 className={`text-xl font-bold text-white mb-1 ${isSectionFullyCompleted(sectionIndex) ? 'line-through opacity-75' : ''}`}>
+                      {section.title}
+                    </h3>
                     <p className="text-white/80 text-sm">{section.description}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
+                  {isSectionFullyCompleted(sectionIndex) && (
+                    <div className="bg-green-500 w-8 h-8 rounded-full flex items-center justify-center">
+                      <Check className="h-5 w-5 text-white" />
+                    </div>
+                  )}
                   <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
                     <span className="text-white text-sm font-medium">{section.duration}</span>
                   </div>
@@ -415,15 +515,33 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: Enhan
                         className="w-full px-6 py-4 hover:bg-gray-50 transition-colors flex items-center justify-between text-left"
                       >
                         <div className="flex items-center flex-1">
+                          <div className="mr-3">
+                            <input
+                              type="checkbox"
+                              checked={isTopicFullyCompleted(sectionIndex, topicIndex)}
+                              onChange={(e) => {
+                                e.stopPropagation()
+                                handleTopicCompletion(sectionIndex, topicIndex, e.target.checked)
+                              }}
+                              className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                            />
+                          </div>
                           <div className={`bg-gradient-to-r ${getImportanceColor(topic.importance_level)} w-8 h-8 rounded-lg flex items-center justify-center mr-4 shadow-sm`}>
                             <Brain className="h-4 w-4 text-white" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-bold text-gray-900 mb-1 text-lg">{topic.title}</h4>
+                            <h4 className={`font-bold text-gray-900 mb-1 text-lg ${isTopicFullyCompleted(sectionIndex, topicIndex) ? 'line-through opacity-75' : ''}`}>
+                              {topic.title}
+                            </h4>
                             <p className="text-gray-600 text-sm italic">{topic.description}</p>
                           </div>
                         </div>
                         <div className="flex items-center ml-4 space-x-2">
+                          {isTopicFullyCompleted(sectionIndex, topicIndex) && (
+                            <div className="bg-green-500 w-6 h-6 rounded-full flex items-center justify-center">
+                              <Check className="h-3 w-3 text-white" />
+                            </div>
+                          )}
                           <div className={`bg-gradient-to-r ${getImportanceColor(topic.importance_level)} px-3 py-1 rounded-full flex items-center`}>
                             {getImportanceIcon(topic.importance_level)}
                             <span className="text-white text-xs font-medium ml-1 capitalize">{topic.importance_level}</span>
@@ -445,9 +563,24 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent }: Enhan
                           <div className={`bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-5 border-l-4 border-gradient-to-b ${getImportanceColor(topic.importance_level)}`}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               {topic.subtopics.map((subtopic, subtopicIndex) => (
-                                <div key={subtopicIndex} className="flex items-start bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow">
+                                <div key={subtopicIndex} className="flex items-start bg-white rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow group">
+                                  <div className="mr-3 mt-1">
+                                    <input
+                                      type="checkbox"
+                                      checked={getCompletionStatus(sectionIndex, topicIndex, subtopicIndex)}
+                                      onChange={(e) => handleSubtopicCompletion(sectionIndex, topicIndex, subtopicIndex, e.target.checked)}
+                                      className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-1"
+                                    />
+                                  </div>
                                   <div className={`bg-gradient-to-r ${getImportanceColor(topic.importance_level)} w-2 h-2 rounded-full mt-2 mr-3 flex-shrink-0`}></div>
-                                  <span className="text-gray-700 text-sm leading-relaxed font-medium">{subtopic}</span>
+                                  <span className={`text-gray-700 text-sm leading-relaxed font-medium ${getCompletionStatus(sectionIndex, topicIndex, subtopicIndex) ? 'line-through opacity-75' : ''}`}>
+                                    {subtopic}
+                                  </span>
+                                  {getCompletionStatus(sectionIndex, topicIndex, subtopicIndex) && (
+                                    <div className="ml-auto">
+                                      <Check className="h-3 w-3 text-green-500" />
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
