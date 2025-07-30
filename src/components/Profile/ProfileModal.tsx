@@ -333,7 +333,7 @@ export function ProfileModal({ isOpen, onClose, profile, onProfileUpdate }: Prof
                   className="flex items-center px-4 py-2 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 text-white rounded-xl hover:from-amber-600 hover:via-orange-600 hover:to-yellow-600 transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <Crown className="h-4 w-4 mr-2" />
-                    Enter Private KEY
+                  Enter Private KEY
                 </button>
               )}
             </div>

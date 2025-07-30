@@ -3,21 +3,44 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-console.log('Supabase URL:', supabaseUrl)
-console.log('Supabase Anon Key exists:', !!supabaseAnonKey)
-
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables:', {
-    url: !!supabaseUrl,
-    key: !!supabaseAnonKey
+    url: supabaseUrl ? 'Present' : 'Missing',
+    key: supabaseAnonKey ? 'Present' : 'Missing'
   })
-  throw new Error('Missing Supabase environment variables. Please check your .env file.')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+console.log('Supabase configuration:', {
+  url: supabaseUrl,
+  keyLength: supabaseAnonKey?.length || 0
+})
+
+// Provide fallback values to prevent crashes
+const fallbackUrl = 'https://placeholder.supabase.co'
+const fallbackKey = 'placeholder-key'
+
+export const supabase = createClient(
+  supabaseUrl || fallbackUrl, 
+  supabaseAnonKey || fallbackKey, 
+  {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  global: {
+    headers: {
+      'apikey': supabaseAnonKey || fallbackKey,
+    },
+  },
+  db: {
+    schema: 'public',
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
   },
 })
 
@@ -207,6 +230,12 @@ export type Database = {
           gate_questions: any
           created_at: string
           updated_at: string
+          dpp_materials: any
+          syllabus_json: any
+          related_posts: any
+          video_resources: any
+          practice_tests: any
+          premium_resources: any
         }
         Insert: {
           id?: string
@@ -216,6 +245,12 @@ export type Database = {
           gate_questions?: any
           created_at?: string
           updated_at?: string
+          dpp_materials?: any
+          syllabus_json?: any
+          related_posts?: any
+          video_resources?: any
+          practice_tests?: any
+          premium_resources?: any
         }
         Update: {
           id?: string
@@ -225,6 +260,12 @@ export type Database = {
           gate_questions?: any
           created_at?: string
           updated_at?: string
+          dpp_materials?: any
+          syllabus_json?: any
+          related_posts?: any
+          video_resources?: any
+          practice_tests?: any
+          premium_resources?: any
         }
       }
       user_progress: {
@@ -239,6 +280,7 @@ export type Database = {
           completion_percentage: number
           created_at: string
           updated_at: string
+          gate_questions_completed: boolean | null
         }
         Insert: {
           id?: string
@@ -251,6 +293,7 @@ export type Database = {
           completion_percentage?: number
           created_at?: string
           updated_at?: string
+          gate_questions_completed?: boolean | null
         }
         Update: {
           id?: string
@@ -263,6 +306,7 @@ export type Database = {
           completion_percentage?: number
           created_at?: string
           updated_at?: string
+          gate_questions_completed?: boolean | null
         }
       }
       leaderboard_competitors: {
@@ -357,9 +401,9 @@ export type Database = {
           url: string
           image_url: string | null
           published_at: string
-          is_active: boolean
-          created_at: string
-          updated_at: string
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
         }
         Insert: {
           id?: string
@@ -368,9 +412,9 @@ export type Database = {
           url: string
           image_url?: string | null
           published_at?: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Update: {
           id?: string
@@ -379,9 +423,9 @@ export type Database = {
           url?: string
           image_url?: string | null
           published_at?: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
         }
       }
     }

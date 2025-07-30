@@ -29,13 +29,26 @@ export function useUserProfile(userId: string | undefined) {
 
       if (error) {
         console.error('Error fetching profile:', error)
-        throw error
+        // Handle specific error cases
+        if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+          console.error('Network error - check Supabase URL and internet connection')
+          setProfile(null)
+          return
+        }
+        setProfile(null)
+        return
       } else {
         console.log('Profile fetched successfully:', data)
         setProfile(data)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      
+      // Handle network errors gracefully
+      if (error instanceof TypeError && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+        console.error('Network error - check Supabase URL and internet connection')
+      }
+      setProfile(null)
     } finally {
       setLoading(false)
     }

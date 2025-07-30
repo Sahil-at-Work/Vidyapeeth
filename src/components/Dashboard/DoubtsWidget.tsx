@@ -20,7 +20,13 @@ import {
   Users,
   Eye,
   Heart,
-  Reply
+  Reply,
+  Zap,
+  Trophy,
+  Target,
+  Crown,
+  Sparkles,
+  TrendingDown
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
@@ -64,6 +70,22 @@ interface DoubtsWidgetProps {
   subjects?: Subject[]
 }
 
+interface DoubtScore {
+  id: string
+  user_id: string
+  total_score: number
+  doubts_asked: number
+  doubts_answered: number
+  upvotes_received: number
+  best_answers: number
+  streak_days: number
+  last_activity_date: string
+  created_at: string
+  updated_at: string
+  user_name?: string
+  user_university?: string
+}
+
 export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
   const { user } = useAuth()
   const { profile } = useUserProfile(user?.id)
@@ -76,6 +98,9 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'resolved' | 'unresolved' | 'my-doubts'>('all')
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent')
+  const [showScoreboard, setShowScoreboard] = useState(false)
+  const [topScorers, setTopScorers] = useState<DoubtScore[]>([])
+  const [userScore, setUserScore] = useState<DoubtScore | null>(null)
 
   // Form states
   const [doubtForm, setDoubtForm] = useState({
@@ -88,6 +113,7 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
 
   useEffect(() => {
     fetchDoubts()
+    fetchScoreboardData()
   }, [filterBy, sortBy])
 
   const fetchDoubts = async () => {
@@ -154,6 +180,63 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
       console.error('Error fetching doubts:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchScoreboardData = async () => {
+    try {
+      // Fetch top scorers
+      const { data: topScorersData, error: topScorersError } = await supabase
+        .from('doubt_scores')
+        .select(`
+          *,
+          users:user_id (
+            user_profiles (
+              display_name,
+              universities:university_id (name)
+            )
+          )
+        `)
+        .order('total_score', { ascending: false })
+        .limit(10)
+
+      if (topScorersError) throw topScorersError
+
+      const transformedTopScorers = (topScorersData || []).map(item => ({
+        ...item,
+        user_name: item.users?.user_profiles?.display_name || 'Anonymous',
+        user_university: item.users?.user_profiles?.universities?.name || 'Unknown University'
+      }))
+
+      setTopScorers(transformedTopScorers)
+
+      // Fetch current user's score
+      if (user) {
+        const { data: userScoreData, error: userScoreError } = await supabase
+          .from('doubt_scores')
+          .select(`
+            *,
+            users:user_id (
+              user_profiles (
+                display_name,
+                universities:university_id (name)
+              )
+            )
+          `)
+          .eq('user_id', user.id)
+          .single()
+
+        if (!userScoreError && userScoreData) {
+          const transformedUserScore = {
+            ...userScoreData,
+            user_name: userScoreData.users?.user_profiles?.display_name || 'You',
+            user_university: userScoreData.users?.user_profiles?.universities?.name || 'Unknown University'
+          }
+          setUserScore(transformedUserScore)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching scoreboard data:', error)
     }
   }
 
@@ -224,6 +307,7 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
       setDoubtForm({ title: '', description: '', subject_id: '', tags: '' })
       setShowAskDoubt(false)
       fetchDoubts()
+      fetchScoreboardData() // Refresh scores after asking a doubt
     } catch (error) {
       console.error('Error posting doubt:', error)
     }
@@ -246,6 +330,7 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
       setReplyContent('')
       fetchReplies(selectedDoubt.id)
       fetchDoubts() // Refresh to update reply count
+      fetchScoreboardData() // Refresh scores after replying
     } catch (error) {
       console.error('Error posting reply:', error)
     }
@@ -266,6 +351,7 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
       } else {
         fetchReplies(doubtId)
       }
+      fetchScoreboardData() // Refresh scores after upvoting
     } catch (error) {
       console.error('Error upvoting:', error)
     }
@@ -329,6 +415,13 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
             <Plus className="h-4 w-4 mr-2" />
             Ask Doubt
           </button>
+          <button
+            onClick={() => setShowScoreboard(!showScoreboard)}
+            className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+          >
+            <Trophy className="h-4 w-4 mr-2" />
+            Scoreboard
+          </button>
         </div>
       </div>
 
@@ -375,6 +468,185 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
 
       {/* Content */}
       <div className="p-6">
+        {/* Scoreboard Section */}
+        {showScoreboard && (
+          <div className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-6 border border-yellow-200">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <div className="bg-yellow-500 w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                  <Trophy className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-yellow-800">Doubts Scoreboard</h4>
+                  <p className="text-yellow-700 text-sm">Top contributors in the community</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowScoreboard(false)}
+                className="text-yellow-600 hover:text-yellow-800 p-2 rounded-lg hover:bg-yellow-100 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* User's Score Card */}
+            {userScore && (
+              <div className="mb-6 bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                      <User className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h5 className="font-bold text-lg">Your Score</h5>
+                      <p className="text-blue-100 text-sm">{userScore.user_university}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-3xl font-bold">{userScore.total_score}</div>
+                    <p className="text-blue-100 text-sm">Total Points</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-4 mt-4 pt-4 border-t border-white/20">
+                  <div className="text-center">
+                    <div className="text-xl font-bold">{userScore.doubts_asked}</div>
+                    <p className="text-blue-100 text-xs">Asked</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xl font-bold">{userScore.doubts_answered}</div>
+                    <p className="text-blue-100 text-xs">Answered</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xl font-bold">{userScore.upvotes_received}</div>
+                    <p className="text-blue-100 text-xs">Upvotes</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xl font-bold">{userScore.best_answers}</div>
+                    <p className="text-blue-100 text-xs">Best Answers</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Top Scorers List */}
+            <div className="space-y-3">
+              <h5 className="font-semibold text-yellow-800 mb-3">🏆 Top Contributors</h5>
+              {topScorers.slice(0, 5).map((scorer, index) => {
+                const isCurrentUser = user && scorer.user_id === user.id
+                const rankColors = [
+                  'from-yellow-400 to-yellow-600', // 1st - Gold
+                  'from-gray-400 to-gray-600',     // 2nd - Silver
+                  'from-orange-400 to-orange-600', // 3rd - Bronze
+                  'from-blue-400 to-blue-600',     // 4th+
+                  'from-purple-400 to-purple-600'  // 5th+
+                ]
+                const rankIcons = [
+                  <Crown className="h-4 w-4" />,
+                  <Award className="h-4 w-4" />,
+                  <Star className="h-4 w-4" />,
+                  <Target className="h-4 w-4" />,
+                  <Sparkles className="h-4 w-4" />
+                ]
+
+                return (
+                  <div
+                    key={scorer.id}
+                    className={`flex items-center justify-between p-3 rounded-lg transition-all ${
+                      isCurrentUser 
+                        ? 'bg-blue-100 border-2 border-blue-300 shadow-md' 
+                        : 'bg-white border border-yellow-200 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className={`w-10 h-10 rounded-full bg-gradient-to-r ${rankColors[Math.min(index, 4)]} flex items-center justify-center text-white font-bold mr-3 shadow-lg`}>
+                        {index < 3 ? rankIcons[index] : index + 1}
+                      </div>
+                      <div>
+                        <div className="flex items-center">
+                          <span className={`font-semibold ${isCurrentUser ? 'text-blue-900' : 'text-gray-900'}`}>
+                            {scorer.user_name}
+                            {isCurrentUser && <span className="ml-2 text-blue-600 text-sm">(You)</span>}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600">{scorer.user_university}</p>
+                        <div className="flex items-center space-x-3 mt-1">
+                          <span className="text-xs text-gray-500 flex items-center">
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            {scorer.doubts_asked} asked
+                          </span>
+                          <span className="text-xs text-gray-500 flex items-center">
+                            <Reply className="h-3 w-3 mr-1" />
+                            {scorer.doubts_answered} answered
+                          </span>
+                          <span className="text-xs text-gray-500 flex items-center">
+                            <Star className="h-3 w-3 mr-1" />
+                            {scorer.best_answers} best
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-xl font-bold ${isCurrentUser ? 'text-blue-900' : 'text-yellow-700'}`}>
+                        {scorer.total_score}
+                      </div>
+                      <p className="text-xs text-gray-600">points</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Scoring Guide */}
+            <div className="mt-6 pt-6 border-t border-yellow-200">
+              <h5 className="font-semibold text-yellow-800 mb-3">💡 How to Earn Points</h5>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                  <div className="flex items-center mb-2">
+                    <Plus className="h-4 w-4 text-green-600 mr-2" />
+                    <span className="font-medium text-green-700">+5</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Ask a doubt</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                  <div className="flex items-center mb-2">
+                    <Reply className="h-4 w-4 text-blue-600 mr-2" />
+                    <span className="font-medium text-blue-700">+10</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Answer a doubt</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                  <div className="flex items-center mb-2">
+                    <ThumbsUp className="h-4 w-4 text-purple-600 mr-2" />
+                    <span className="font-medium text-purple-700">+2/+3</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Get upvoted</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                  <div className="flex items-center mb-2">
+                    <Star className="h-4 w-4 text-yellow-600 mr-2" />
+                    <span className="font-medium text-yellow-700">+15</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Best answer</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                  <div className="flex items-center mb-2">
+                    <Sparkles className="h-4 w-4 text-indigo-600 mr-2" />
+                    <span className="font-medium text-indigo-700">+5</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Quality bonus</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                  <div className="flex items-center mb-2">
+                    <Zap className="h-4 w-4 text-orange-600 mr-2" />
+                    <span className="font-medium text-orange-700">Bonus</span>
+                  </div>
+                  <p className="text-xs text-gray-600">Daily streak</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
@@ -460,6 +732,10 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
                     <div className="flex items-center">
                       <Eye className="h-3 w-3 mr-1" />
                       <span>{doubt.views}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Zap className="h-3 w-3 mr-1 text-yellow-500" />
+                      <span className="text-yellow-600 font-medium">+5 pts</span>
                     </div>
                   </div>
                   <div className="flex items-center text-xs text-gray-500">

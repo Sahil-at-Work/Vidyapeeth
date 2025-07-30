@@ -242,7 +242,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why 50,000+ Students Choose Vidyapeeth?
+              Why 6,000+ Students Choose Vidyapeeth?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Our AI-powered platform combines proven educational methods with cutting-edge technology for maximum learning efficiency.

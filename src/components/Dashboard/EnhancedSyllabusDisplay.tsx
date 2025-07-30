@@ -110,11 +110,11 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subject
 
   const getCompletionStatus = (sectionIndex: number, topicIndex?: number, subtopicIndex?: number) => {
     const key = `${sectionIndex}-${topicIndex || 'null'}-${subtopicIndex || 'null'}`
-    return completionStatus[key] || false
+    return completionStatus?.[key] || false
   }
 
   const getCompletionStats = () => {
-    if (!sections || !sections.length) return { completed: 0, total: 0, percentage: 0 }
+    if (!sections || !sections.length || !completionStatus) return { completed: 0, total: 0, percentage: 0 }
     
     let totalItems = 0
     let completedItems = 0
@@ -123,12 +123,15 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subject
       section.topics.forEach((topic, topicIndex) => {
         topic.subtopics.forEach((_, subtopicIndex) => {
           totalItems++
-          if (getCompletionStatus(sectionIndex, topicIndex, subtopicIndex)) {
+          const key = `${sectionIndex}-${topicIndex || 'null'}-${subtopicIndex || 'null'}`
+          if (completionStatus[key]) {
             completedItems++
           }
         })
       })
     })
+    
+    console.log('Completion stats:', { completedItems, totalItems, completionStatus })
     
     return {
       completed: completedItems,
@@ -143,7 +146,7 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subject
     if (!topic || !topic.subtopics.length) return false
     
     return topic.subtopics.every((_, subtopicIndex) => 
-      getCompletionStatus(sectionIndex, topicIndex, subtopicIndex)
+      completionStatus[`${sectionIndex}-${topicIndex || 'null'}-${subtopicIndex || 'null'}`] || false
     )
   }
 
@@ -326,10 +329,21 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subject
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
             <div 
-              className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-300"
+              className={`h-3 rounded-full transition-all duration-500 ${
+                getCompletionStats().percentage > 0 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                  : 'bg-gray-300'
+              }`}
               style={{ width: `${getCompletionStats().percentage}%` }}
             />
           </div>
+          {getCompletionStats().percentage > 0 && (
+            <div className="text-center mt-2">
+              <span className="text-lg font-bold text-green-600">
+                {getCompletionStats().percentage}%
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -592,6 +606,12 @@ export function EnhancedSyllabusDisplay({ syllabusData, fallbackContent, subject
               )}
             </div>
           ))}
+        </div>
+
+        {/* Debug Info - Remove in production */}
+        <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
+          <p>Debug: {Object.keys(completionStatus || {}).length} completion entries</p>
+          <p>Stats: {getCompletionStats().completed}/{getCompletionStats().total} = {getCompletionStats().percentage}%</p>
         </div>
 
         {/* Exam Pattern Info */}

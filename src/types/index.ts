@@ -100,6 +100,20 @@ export interface VideoChapter {
   topics: VideoTopic[]
 }
 
+export interface PracticeQuestion {
+  question_image: string
+  options: string[]
+  correct_answer: number
+  explanation: string
+}
+
+export interface PracticeTest {
+  title: string
+  description: string
+  duration: string
+  questions: PracticeQuestion[]
+}
+
 export interface SubjectMaterial {
   id: string
   subject_id: string
@@ -110,6 +124,7 @@ export interface SubjectMaterial {
   dpp_materials: DPPChapter[]
   related_posts: RelatedPost[]
   video_resources: VideoChapter[]
+  practice_tests: PracticeTest[]
   created_at: string
   updated_at: string
 }
@@ -221,4 +236,53 @@ export interface PlacementComment {
   content: string
   created_at: string
   updated_at: string
+}
+
+export interface DoubtScore {
+  id: string
+  user_id: string
+  total_score: number
+  doubts_asked: number
+  doubts_answered: number
+  upvotes_received: number
+  best_answers: number
+  streak_days: number
+  last_activity_date: string
+  created_at: string
+  updated_at: string
+}
+
+export interface DoubtScoreTransaction {
+  id: string
+  user_id: string
+  doubt_id: string | null
+  reply_id: string | null
+  transaction_type: 'ask_doubt' | 'answer_doubt' | 'doubt_upvote' | 'reply_upvote' | 'best_answer' | 'quality_bonus' | 'streak_bonus'
+  points_earned: number
+  description: string | null
+  created_at: string
+}
+
+export interface DriveResource {
+  title: string
+  description: string
+  drive_link: string
+  category: string
+  file_type: 'folder' | 'document' | 'spreadsheet' | 'presentation' | 'other'
+}
+
+export interface PDFResource {
+  title: string
+  description: string
+  pdf_link: string
+  category: string
+  file_size?: string
+  pages?: number
+}
+
+export interface PremiumResources {
+  drive_links: DriveResource[]
+  pdf_files: PDFResource[]
+  access_note?: string
+  last_updated?: string
 }
