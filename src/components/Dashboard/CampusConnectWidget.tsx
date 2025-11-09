@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { 
-  Briefcase, 
-  Plus, 
-  Search, 
-  Filter, 
-  Calendar, 
-  MapPin, 
+import {
+  Briefcase,
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  MapPin,
   DollarSign,
   Building2,
   Clock,
@@ -21,11 +21,13 @@ import {
   Target,
   TrendingUp,
   CheckCircle,
-  User
+  User,
+  Tag
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { useUserProfile } from '../../hooks/useUserProfile'
+import { SearchableTagsDropdown } from './SearchableTagsDropdown'
 
 interface PlacementRecord {
   id: string
@@ -40,6 +42,8 @@ interface PlacementRecord {
   requirements: string | null
   application_link: string | null
   contact_email: string | null
+  college_name: string | null
+  tags: string[] | null
   is_official: boolean
   posted_by: string
   views: number
@@ -72,7 +76,9 @@ export function CampusConnectWidget() {
   const [comments, setComments] = useState<PlacementComment[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'internship' | 'placement' | 'official'>('all')
+  const [collegeFilter, setCollegeFilter] = useState<string>('all')
   const [sortBy, setSortBy] = useState<'recent' | 'deadline' | 'popular'>('recent')
+  const [availableColleges, setAvailableColleges] = useState<string[]>([])
 
   // Form states
   const [placementForm, setPlacementForm] = useState({
@@ -86,6 +92,8 @@ export function CampusConnectWidget() {
     requirements: '',
     application_link: '',
     contact_email: '',
+    college_name: '',
+    tags: [] as string[],
     is_official: true
   })
   const [commentContent, setCommentContent] = useState('')
@@ -93,6 +101,10 @@ export function CampusConnectWidget() {
   useEffect(() => {
     fetchPlacements()
   }, [filterBy, sortBy])
+
+  useEffect(() => {
+    fetchAvailableColleges()
+  }, [])
 
   const fetchPlacements = async () => {
     try {
@@ -145,6 +157,23 @@ export function CampusConnectWidget() {
       console.error('Error fetching placements:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAvailableColleges = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('placement_records')
+        .select('college_name')
+        .eq('is_active', true)
+        .not('college_name', 'is', null)
+
+      if (error) throw error
+
+      const uniqueColleges = [...new Set(data?.map(item => item.college_name).filter(Boolean) || [])]
+      setAvailableColleges(uniqueColleges.sort())
+    } catch (error) {
+      console.error('Error fetching colleges:', error)
     }
   }
 
@@ -205,10 +234,13 @@ export function CampusConnectWidget() {
         requirements: '',
         application_link: '',
         contact_email: '',
+        college_name: '',
+        tags: [],
         is_official: true
       })
       setShowAddPlacement(false)
       fetchPlacements()
+      fetchAvailableColleges()
     } catch (error) {
       console.error('Error posting placement:', error)
     }
@@ -304,11 +336,15 @@ export function CampusConnectWidget() {
     return 'text-green-600'
   }
 
-  const filteredPlacements = placements.filter(placement =>
-    placement.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    placement.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    placement.job_description.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredPlacements = placements.filter(placement => {
+    const matchesSearch = placement.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      placement.job_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      placement.job_description.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesCollege = collegeFilter === 'all' || placement.college_name === collegeFilter
+
+    return matchesSearch && matchesCollege
+  })
 
   return (
     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -358,6 +394,17 @@ export function CampusConnectWidget() {
               <option value="internship">Internships</option>
               <option value="placement">Placements</option>
               <option value="official">Official Only</option>
+            </select>
+
+            <select
+              value={collegeFilter}
+              onChange={(e) => setCollegeFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+            >
+              <option value="all">All Colleges</option>
+              {availableColleges.map((college) => (
+                <option key={college} value={college}>{college}</option>
+              ))}
             </select>
 
             <select
@@ -425,6 +472,38 @@ export function CampusConnectWidget() {
                 <p className="text-gray-700 text-xs line-clamp-2 mb-3">
                   {placement.job_description}
                 </p>
+
+                {/* College Name */}
+                {placement.college_name && (
+                  <div className="mb-3">
+                    <div className="bg-sky-50 border border-sky-200 rounded-lg px-3 py-2 flex items-center">
+                      <Building2 className="h-3.5 w-3.5 text-sky-600 mr-2 flex-shrink-0" />
+                      <span className="text-xs text-sky-900 font-medium line-clamp-1">{placement.college_name}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Tags */}
+                {placement.tags && placement.tags.length > 0 && (
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {placement.tags.slice(0, 3).map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md text-xs font-medium"
+                        >
+                          <Tag className="h-3 w-3 mr-1" />
+                          {tag}
+                        </span>
+                      ))}
+                      {placement.tags.length > 3 && (
+                        <span className="inline-flex items-center bg-gray-100 text-gray-600 px-2 py-1 rounded-md text-xs font-medium">
+                          +{placement.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Details */}
                 <div className="space-y-2 mb-3">
@@ -526,6 +605,19 @@ export function CampusConnectWidget() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  College Name
+                </label>
+                <input
+                  type="text"
+                  value={placementForm.college_name}
+                  onChange={(e) => setPlacementForm(prev => ({ ...prev, college_name: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  placeholder="e.g., IIT Delhi, NIT Trichy"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Job Description *
                 </label>
                 <textarea
@@ -620,6 +712,11 @@ export function CampusConnectWidget() {
                 />
               </div>
 
+              <SearchableTagsDropdown
+                selectedTags={placementForm.tags}
+                onChange={(tags) => setPlacementForm(prev => ({ ...prev, tags }))}
+              />
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -681,7 +778,34 @@ export function CampusConnectWidget() {
                       <h4 className="font-semibold text-gray-900 mb-2">Job Description</h4>
                       <p className="text-gray-700">{selectedPlacement.job_description}</p>
                     </div>
-                    
+
+                    {selectedPlacement.college_name && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">College</h4>
+                        <div className="bg-sky-50 border border-sky-200 rounded-lg px-4 py-3 flex items-center">
+                          <Building2 className="h-5 w-5 text-sky-600 mr-3 flex-shrink-0" />
+                          <span className="text-gray-900 font-medium">{selectedPlacement.college_name}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedPlacement.tags && selectedPlacement.tags.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Tags</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedPlacement.tags.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-lg text-sm font-medium"
+                            >
+                              <Tag className="h-4 w-4 mr-1.5" />
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {selectedPlacement.requirements && (
                       <div>
                         <h4 className="font-semibold text-gray-900 mb-2">Requirements</h4>
