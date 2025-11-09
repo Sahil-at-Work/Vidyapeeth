@@ -101,6 +101,9 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'resolved' | 'unresolved' | 'my-doubts'>('all')
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'trending'>('recent')
+  const [filterUniversity, setFilterUniversity] = useState<string>('all')
+  const [filterDepartment, setFilterDepartment] = useState<string>('all')
+  const [filterSemester, setFilterSemester] = useState<string>('all')
   const [showScoreboard, setShowScoreboard] = useState(false)
   const [topScorers, setTopScorers] = useState<DoubtScore[]>([])
   const [userScore, setUserScore] = useState<DoubtScore | null>(null)
@@ -405,11 +408,22 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
     return `${number}${suffixes[number - 1]} Sem`
   }
 
-  const filteredDoubts = doubts.filter(doubt =>
-    doubt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doubt.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    doubt.subject_name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Get unique values for dropdowns
+  const uniqueUniversities = Array.from(new Set(doubts.map(d => d.doubt_university))).sort()
+  const uniqueDepartments = Array.from(new Set(doubts.map(d => d.doubt_department))).sort()
+  const uniqueSemesters = Array.from(new Set(doubts.map(d => d.doubt_semester))).sort((a, b) => a - b)
+
+  const filteredDoubts = doubts.filter(doubt => {
+    const matchesSearch = doubt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doubt.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      doubt.subject_name.toLowerCase().includes(searchQuery.toLowerCase())
+
+    const matchesUniversity = filterUniversity === 'all' || doubt.doubt_university === filterUniversity
+    const matchesDepartment = filterDepartment === 'all' || doubt.doubt_department === filterDepartment
+    const matchesSemester = filterSemester === 'all' || doubt.doubt_semester.toString() === filterSemester
+
+    return matchesSearch && matchesUniversity && matchesDepartment && matchesSemester
+  })
 
   return (
     <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -442,9 +456,9 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
 
       {/* Filters and Search */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="space-y-3">
           {/* Search */}
-          <div className="flex-1 relative">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
@@ -455,12 +469,12 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
             />
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-2">
+          {/* Filters Row */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             <select
               value={filterBy}
               onChange={(e) => setFilterBy(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm bg-white"
             >
               <option value="all">All Doubts</option>
               <option value="unresolved">Unresolved</option>
@@ -471,11 +485,44 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm bg-white"
             >
               <option value="recent">Recent</option>
               <option value="popular">Popular</option>
               <option value="trending">Trending</option>
+            </select>
+
+            <select
+              value={filterUniversity}
+              onChange={(e) => setFilterUniversity(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm bg-white"
+            >
+              <option value="all">All Universities</option>
+              {uniqueUniversities.map(uni => (
+                <option key={uni} value={uni}>{uni}</option>
+              ))}
+            </select>
+
+            <select
+              value={filterDepartment}
+              onChange={(e) => setFilterDepartment(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm bg-white"
+            >
+              <option value="all">All Departments</option>
+              {uniqueDepartments.map(dept => (
+                <option key={dept} value={dept}>{dept}</option>
+              ))}
+            </select>
+
+            <select
+              value={filterSemester}
+              onChange={(e) => setFilterSemester(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm bg-white"
+            >
+              <option value="all">All Semesters</option>
+              {uniqueSemesters.map(sem => (
+                <option key={sem} value={sem.toString()}>Semester {sem}</option>
+              ))}
             </select>
           </div>
         </div>
