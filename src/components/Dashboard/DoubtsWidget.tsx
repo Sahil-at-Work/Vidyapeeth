@@ -43,6 +43,8 @@ interface Doubt {
   university_name: string
   department_name: string
   semester_number: number
+  doubt_university: string
+  doubt_semester: number
   created_at: string
   upvotes: number
   replies_count: number
@@ -107,7 +109,9 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
     title: '',
     description: '',
     subject_id: '',
-    tags: ''
+    tags: '',
+    university_name: '',
+    semester: ''
   })
   const [replyContent, setReplyContent] = useState('')
 
@@ -166,6 +170,8 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
         university_name: item.user_profiles?.universities?.name || 'Unknown University',
         department_name: item.user_profiles?.departments?.name || 'Unknown Department',
         semester_number: item.user_profiles?.semesters?.number || 0,
+        doubt_university: item.university_name || 'Not specified',
+        doubt_semester: item.semester || 0,
         created_at: item.created_at,
         upvotes: item.upvotes || 0,
         replies_count: item.replies_count || 0,
@@ -279,13 +285,15 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
   }
 
   const handleAskDoubt = async () => {
-    if (!user || !profile || !doubtForm.title.trim() || !doubtForm.description.trim() || !doubtForm.subject_id) {
+    if (!user || !profile || !doubtForm.title.trim() || !doubtForm.description.trim() || !doubtForm.subject_id || !doubtForm.university_name.trim() || !doubtForm.semester) {
       console.error('Missing required fields:', {
         user: !!user,
         profile: !!profile,
         title: doubtForm.title.trim(),
         description: doubtForm.description.trim(),
-        subject_id: doubtForm.subject_id
+        subject_id: doubtForm.subject_id,
+        university_name: doubtForm.university_name.trim(),
+        semester: doubtForm.semester
       })
       return
     }
@@ -299,12 +307,14 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
           subject_id: doubtForm.subject_id,
           title: doubtForm.title.trim(),
           description: doubtForm.description.trim(),
-          tags: doubtForm.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+          tags: doubtForm.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+          university_name: doubtForm.university_name.trim(),
+          semester: parseInt(doubtForm.semester)
         })
 
       if (error) throw error
 
-      setDoubtForm({ title: '', description: '', subject_id: '', tags: '' })
+      setDoubtForm({ title: '', description: '', subject_id: '', tags: '', university_name: '', semester: '' })
       setShowAskDoubt(false)
       fetchDoubts()
       fetchScoreboardData() // Refresh scores after asking a doubt
@@ -718,6 +728,19 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
                   )}
                 </div>
 
+                {/* Doubt Context */}
+                <div className="flex items-center gap-2 mb-3 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg">
+                  <div className="flex items-center whitespace-nowrap">
+                    <GraduationCap className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <span className="truncate">{doubt.doubt_university}</span>
+                  </div>
+                  <span className="text-gray-400">•</span>
+                  <div className="flex items-center whitespace-nowrap">
+                    <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+                    <span>Sem {doubt.doubt_semester}</span>
+                  </div>
+                </div>
+
                 {/* Stats */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4 text-xs text-gray-500">
@@ -818,6 +841,41 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
                 )}
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    University Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={doubtForm.university_name}
+                    onChange={(e) => setDoubtForm(prev => ({ ...prev, university_name: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="e.g., Mumbai University"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Semester <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={doubtForm.semester}
+                    onChange={(e) => setDoubtForm(prev => ({ ...prev, semester: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select semester...</option>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                      <option key={sem} value={sem}>
+                        Semester {sem}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tags (comma separated)
@@ -862,6 +920,16 @@ export function DoubtsWidget({ subjects = [] }: DoubtsWidgetProps) {
                   <p className="text-emerald-100 text-sm">
                     by {selectedDoubt.student_name} • {selectedDoubt.university_name} • {selectedDoubt.department_name}
                   </p>
+                  <div className="flex items-center gap-3 mt-2 text-emerald-50 text-xs">
+                    <div className="flex items-center whitespace-nowrap">
+                      <GraduationCap className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span>Doubt University: {selectedDoubt.doubt_university}</span>
+                    </div>
+                    <div className="flex items-center whitespace-nowrap">
+                      <Calendar className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span>Semester: {selectedDoubt.doubt_semester}</span>
+                    </div>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowDoubtDetail(false)}
