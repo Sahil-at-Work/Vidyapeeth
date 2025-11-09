@@ -26,7 +26,7 @@ export function StudyMaterialsModal({
   profile,
   onUpdateProgress 
 }: StudyMaterialsModalProps) {
-  const [activeTab, setActiveTab] = useState<'syllabus' | 'dpp' | 'videos' | 'posts' | 'tests' | 'resources'>('syllabus')
+  const [activeTab, setActiveTab] = useState<'syllabus' | 'dpp' | 'videos' | 'posts' | 'tests' | 'resources' | 'premium'>('syllabus')
   
   // Practice test states
   const [selectedTest, setSelectedTest] = useState<any>(null)
@@ -79,7 +79,7 @@ export function StudyMaterialsModal({
 
   if (!isOpen) return null
 
-  const handleTabClick = (tab: 'syllabus' | 'dpp' | 'videos' | 'posts' | 'tests' | 'resources') => {
+  const handleTabClick = (tab: 'syllabus' | 'dpp' | 'videos' | 'posts' | 'tests' | 'resources' | 'premium') => {
     // Only update progress for syllabus and dpp tabs
     if (tab === 'syllabus' || tab === 'dpp') {
       setActiveTab(tab)
@@ -283,17 +283,11 @@ export function StudyMaterialsModal({
         <div className="bg-gray-50 px-6 py-3 border-b">
           <div className="flex space-x-1">
             <button
-              onClick={() => {
-                if (!premiumUnlocked) {
-                  setShowPrivateKeyDialog(true)
-                } else {
-                  handleTabClick('syllabus')
-                }
-              }}
+              onClick={() => handleTabClick('syllabus')}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 activeTab === 'syllabus'
                   ? 'bg-white text-indigo-600 shadow-sm'
-                  : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               }`}
             >
               <BookOpen className="h-4 w-4 inline mr-2" />
@@ -330,14 +324,14 @@ export function StudyMaterialsModal({
 
             {/* Premium Resources Tab */}
             <button
-              onClick={() => setActiveTab('premium')}
+              onClick={handlePremiumResourcesClick}
               className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeTab === 'premium'
+                activeTab === 'resources' && resourcesUnlocked
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-amber-600 hover:bg-amber-50'
               }`}
             >
-              {premiumUnlocked ? (
+              {resourcesUnlocked ? (
                 <Crown className="h-4 w-4 mr-2" />
               ) : (
                 <Lock className="h-4 w-4 mr-2" />
@@ -861,7 +855,7 @@ export function StudyMaterialsModal({
           )}
 
           {/* Premium Resources */}
-          {activeTab === 'resources' && materials?.premium_resources && resourcesUnlocked && (
+          {activeTab === 'resources' && resourcesUnlocked && materials?.premium_resources && (
             <div className="space-y-6">
               <div className="text-center mb-8">
                 <div className="bg-gradient-to-r from-amber-400 to-orange-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -1020,31 +1014,22 @@ export function StudyMaterialsModal({
             </div>
           )}
 
-          {/* Drive Link */}
-          {materials?.drive_link && (
-            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="bg-blue-500 w-12 h-12 rounded-lg flex items-center justify-center mr-4">
-                    <ExternalLink className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-blue-900">Additional Resources</h4>
-                    <p className="text-blue-700">Access more study materials on Google Drive</p>
-                  </div>
-                </div>
-                <a
-                  href={materials.drive_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Open Drive
-                </a>
+          {/* About Vidyapeeth */}
+          <div className="mt-8 p-8 bg-gradient-to-br from-blue-50 to-sky-50 rounded-xl border border-blue-200 shadow-sm relative z-20">
+            <div className="flex items-start space-x-4">
+              <div className="bg-blue-600 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 shadow-md">
+                <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-2xl font-bold text-gray-900 mb-3">About Vidyapeeth</h4>
+                <p className="text-gray-700 leading-relaxed text-base">
+                  Vidyapeeth is a comprehensive educational platform designed to empower students with organized, accessible, and high-quality study resources. Our mission is to simplify the learning journey by providing structured syllabi, daily practice problems, curated notes, and interactive progress tracking. Whether you're preparing for exams or exploring new subjects, Vidyapeeth offers a personalized learning experience tailored to your academic needs. With features like gamification, leaderboards, and doubt resolution, we create an engaging environment that motivates students to achieve their full potential. Join thousands of learners who are transforming their education with Vidyapeeth.
+                </p>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Private Key Dialog */}
